@@ -17,13 +17,6 @@
             </list>
           </value>
         </entry>
-        <entry key="algoliasearch">
-          <value>
-            <list>
-              <option value="$USER_HOME$/.pub-cache/git/algoliasearch-836584429efb31bbaa961f7dfaf8df92c945e860/lib" />
-            </list>
-          </value>
-        </entry>
         <entry key="analyzer">
           <value>
             <list>
@@ -646,7 +639,6 @@
       </option>
     </properties>
     <CLASSES>
-      <root url="file://$USER_HOME$/.pub-cache/git/algoliasearch-836584429efb31bbaa961f7dfaf8df92c945e860/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/_discoveryapis_commons-0.2.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/_fe_analyzer_shared-11.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/_fe_analyzer_shared-12.0.0/lib" />

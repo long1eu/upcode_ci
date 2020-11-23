@@ -155,7 +155,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
   String get flutterGeneratedDir => path.join(flutterDir, 'lib', 'generated');
 
   // tools
-  String get toolsDir => path.join(pwd, 'ci', 'tools');
+  String get toolsDir => path.join(pwd, 'ci', 'other_tools');
 }
 
 extension FileString on String {

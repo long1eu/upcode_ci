@@ -8,6 +8,9 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/lib/src/tools/flutter_l10n/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/lib/src/tools/flutter_l10n/build" />
+      <excludeFolder url="file://$MODULE_DIR$/other_tools/flutter_l10n/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/other_tools/flutter_l10n/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/other_tools/flutter_l10n/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
