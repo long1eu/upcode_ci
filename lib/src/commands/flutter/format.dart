@@ -27,20 +27,22 @@ class FlutterFormatCommand extends UpcodeCommand {
   FutureOr<dynamic> run() async {
     final bool modify = argResults['modify'] ?? false;
 
-    final List<String> files = Directory(flutterDir)
-        .listSync(recursive: true, followLinks: false)
-        .whereType<File>()
-        .map((File it) => it.path.split('$flutterDir/')[1])
-        .where(fileFilter)
-        .toList();
+    for (final String module in formattedFilesModules) {
+      final List<String> files = Directory(module)
+          .listSync(recursive: true, followLinks: false)
+          .whereType<File>()
+          .map((File it) => it.path.split('$module/')[1])
+          .where(fileFilter)
+          .toList();
 
-    await execute(
-      () => runCommand(
-        'flutter',
-        <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...files],
-        workingDirectory: flutterDir,
-      ),
-      description,
-    );
+      await execute(
+        () => runCommand(
+          'flutter',
+          <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...files],
+          workingDirectory: module,
+        ),
+        description,
+      );
+    }
   }
 }

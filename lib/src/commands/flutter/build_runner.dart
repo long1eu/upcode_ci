@@ -17,13 +17,16 @@ class FlutterBuildRunnerCommand extends UpcodeCommand {
 
   @override
   FutureOr<dynamic> run() async {
-    await execute(
-      () => runCommand(
-        'flutter',
-        <String>['pub', 'pub', 'run', 'build_runner', 'build', '--delete-conflicting-outputs'],
-        workingDirectory: flutterDir,
-      ),
-      description,
-    );
+    for (final String module in generatedFilesModules) {
+      await execute(() => runCommand('flutter', <String>['pub', 'get'], workingDirectory: module), description);
+      await execute(
+        () => runCommand(
+          'flutter',
+          <String>['pub', 'pub', 'run', 'build_runner', 'build', '--delete-conflicting-outputs'],
+          workingDirectory: module,
+        ),
+        description,
+      );
+    }
   }
 }

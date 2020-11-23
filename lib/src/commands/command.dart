@@ -142,6 +142,30 @@ abstract class UpcodeCommand extends Command<dynamic> {
   // flutter
   String get flutterDir => _config['flutter_dir'];
 
+  List<String> get generatedFilesModules {
+    if (_config.containsKey('generated_modules')) {
+      return List<String>.from(_config['generated_modules']);
+    } else {
+      return <String>[flutterDir];
+    }
+  }
+
+  List<String> get analyzedFilesModules {
+    if (_config.containsKey('analyzed_modules')) {
+      return List<String>.from(_config['analyzed_modules']);
+    } else {
+      return <String>[flutterDir];
+    }
+  }
+
+  List<String> get formattedFilesModules {
+    if (_config.containsKey('formatted_modules')) {
+      return List<String>.from(_config['formatted_modules']);
+    } else {
+      return <String>[flutterDir];
+    }
+  }
+
   String get androidDir => path.join(flutterDir, 'android');
 
   String get androidAppDir => path.join(androidDir, 'app');
