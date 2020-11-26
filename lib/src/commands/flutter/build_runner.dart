@@ -17,7 +17,7 @@ class FlutterBuildRunnerCommand extends UpcodeCommand {
 
   @override
   FutureOr<dynamic> run() async {
-    for (final String module in generatedFilesModules) {
+    for (final String module in generatedModules) {
       await execute(() => runCommand('flutter', <String>['pub', 'get'], workingDirectory: module), description);
       await execute(
         () => runCommand(

@@ -142,27 +142,43 @@ abstract class UpcodeCommand extends Command<dynamic> {
   // flutter
   String get flutterDir => _config['flutter_dir'];
 
-  List<String> get generatedFilesModules {
-    if (_config.containsKey('generated_modules')) {
-      return List<String>.from(_config['generated_modules']);
+  List<String> get modules {
+    if (_config.containsKey('modules')) {
+      return List<String>.from(_config['modules']);
     } else {
       return <String>[flutterDir];
     }
   }
 
-  List<String> get analyzedFilesModules {
-    if (_config.containsKey('analyzed_modules')) {
-      return List<String>.from(_config['analyzed_modules']);
+  List<String> get generatedModules {
+    if (_config.containsKey('generated')) {
+      return List<String>.from(_config['generated']);
     } else {
-      return <String>[flutterDir];
+      return <String>[];
     }
   }
 
-  List<String> get formattedFilesModules {
-    if (_config.containsKey('formatted_modules')) {
-      return List<String>.from(_config['formatted_modules']);
+  List<String> get analyzedModules {
+    if (_config.containsKey('analyzed')) {
+      return List<String>.from(_config['analyzed']);
     } else {
-      return <String>[flutterDir];
+      return modules;
+    }
+  }
+
+  List<String> get formattedModules {
+    if (_config.containsKey('formatted')) {
+      return List<String>.from(_config['formatted']);
+    } else {
+      return modules;
+    }
+  }
+
+  List<String> get testedModules {
+    if (_config.containsKey('tested')) {
+      return List<String>.from(_config['tested']);
+    } else {
+      return modules;
     }
   }
 

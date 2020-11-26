@@ -1,3 +1,10 @@
+## 0.2.0
+* remove `formatted_modules` and `analyzed_modules`
+* add `formatted`, `analyzed`, `tested` and `generated`
+
+## 0.1.5
+* add config based on environment
+
 ## 0.1.4+1
 * fix `formatted_modules`
 

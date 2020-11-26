@@ -7,6 +7,17 @@ import 'package:upcode_ci/src/commands/command.dart';
 mixin EnvironmentMixin on UpcodeCommand {
   String get rawEnv => argResults['env'];
 
+  Map<String, dynamic> get apiConfig {
+    return <String, dynamic>{
+      for (MapEntry<String, dynamic> entry
+          in config.entries.where((MapEntry<String, dynamic> element) => element.value is! Map))
+        entry.key: entry.value,
+      for (var value
+          in config.entries.where((MapEntry<String, dynamic> element) => element.key == env && element.value is Map))
+        ...value.value,
+    };
+  }
+
   String get env {
     final String env = rawEnv;
     if (env != 'prod' && env != 'dev' && !env.startsWith('feature/')) {

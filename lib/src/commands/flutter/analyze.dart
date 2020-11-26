@@ -16,14 +16,14 @@ class FlutterAnalyzeCommand extends UpcodeCommand {
 
   @override
   FutureOr<dynamic> run() async {
-    for (final String module in analyzedFilesModules) {
+    for (final String module in analyzedModules) {
       await execute(
         () => runCommand(
           'flutter',
           <String>['analyze'],
           workingDirectory: module,
         ),
-        description,
+        'Runs the dart analyzer in $module.',
       );
     }
   }

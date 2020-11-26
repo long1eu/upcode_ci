@@ -31,24 +31,11 @@ mixin _FlutterEnvironmentCommandMixin on UpcodeCommand {
 class FlutterSetEnvironmentCommand extends UpcodeCommand
     with _FlutterEnvironmentCommandMixin, EnvironmentMixin, ApplicationMixin {
   FlutterSetEnvironmentCommand(Map<String, dynamic> config) : super(config) {
-    argParser
-      ..addOption(
-        'env',
-        abbr: 'e',
-        help: 'The name of the environment you want to create',
-      )
-      ..addOption(
-        'location',
-        abbr: 'l',
-        help: 'Defines where this environment is supposed to run.',
-        allowed: <String>['cloud', 'local'],
-        defaultsTo: 'cloud',
-      )
-      ..addOption(
-        'host',
-        abbr: 'o',
-        help: 'Defines the local host where the server is running.',
-      );
+    argParser.addOption(
+      'env',
+      abbr: 'e',
+      help: 'The name of the environment you want to create',
+    );
   }
 
   @override
@@ -99,15 +86,14 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
       ..writeln('// ignore: avoid_classes_with_only_static_members')
       ..writeln('class Config {')
       ..writeln('  static const String environment = \'$env\';')
-      ..writeln('  static const String location = \'${argResults['location']}\';')
       ..writeln('  static const String androidApiKey = \'$androidKey\';')
       ..writeln('  static const String iosApiKey = \'$iosKey\';');
 
-    for (String key in this.config.keys) {
+    for (String key in this.apiConfig.keys) {
       String variableName = camelize(key);
       final List<String> parts = variableName.split('');
       variableName = [parts.first.toLowerCase(), ...parts.skip(1)].join('');
-      buffer.writeln('  static const String ${variableName} = \'${this.config[key]}\';');
+      buffer.writeln('  static const String ${variableName} = \'${this.apiConfig[key]}\';');
     }
     buffer //
       ..writeln('}')

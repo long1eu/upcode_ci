@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:path/path.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 
 class FlutterTestCommand extends UpcodeCommand {
@@ -13,10 +14,32 @@ class FlutterTestCommand extends UpcodeCommand {
   final String name = 'flutter:test';
 
   @override
-  final String description = 'Runs the all the test in the flutter module.';
+  final String description = 'Runs the all the test in modules.';
 
   @override
   FutureOr<dynamic> run() async {
-    await execute(() => runCommand('flutter', <String>['test'], workingDirectory: flutterDir), description);
+    for (final String module in testedModules) {
+      final bool isFlutter = join(module, 'pubspec.yaml').readAsStringSync().contains('sdk: flutter');
+
+      if (isFlutter) {
+        await execute(
+          () => runCommand(
+            'flutter',
+            <String>['test'],
+            workingDirectory: module,
+          ),
+          'Runs the all the test in the $module module.',
+        );
+      } else {
+        await execute(
+          () => runCommand(
+            'pub',
+            <String>['run', 'test'],
+            workingDirectory: module,
+          ),
+          'Runs the all the test in the $module module.',
+        );
+      }
+    }
   }
 }
