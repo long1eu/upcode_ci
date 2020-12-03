@@ -45,10 +45,25 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
     String path;
     if (argResults['platform'] == 'android') {
       appId = (await getAndroidApp()).appId;
-      path = join(flutterDir, 'build', 'app', 'outputs', 'flutter-apk', 'app-$env-release.apk');
+      String fileName;
+      if (argResults.wasParsed('env')) {
+        fileName = 'app-$env-release.apk';
+      } else {
+        fileName = 'app-release.apk';
+      }
+
+      path = join(flutterDir, 'build', 'app', 'outputs', 'flutter-apk', fileName);
     } else if (argResults['platform'] == 'ios') {
       appId = (await getIosApp()).appId;
-      path = join(flutterDir, 'build', 'ios', 'iphoneos', 'Runner_adhoc_$env.ipa');
+
+      String fileName;
+      if (argResults.wasParsed('env')) {
+        fileName = 'Runner_adhoc_$env.ipa';
+      } else {
+        fileName = 'Runner_adhoc.ipa';
+      }
+
+      path = join(flutterDir, 'build', 'ios', 'iphoneos', fileName);
     } else {
       throw ArgumentError('Unknown platform.');
     }

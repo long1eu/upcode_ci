@@ -82,12 +82,18 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
     final String iosKey = await execute(iosApiKey, 'Reading iOS API key');
 
     stdout.writeln('Saving Flutter configuration');
-    final StringBuffer buffer = StringBuffer()
+    final StringBuffer buffer = StringBuffer() //
       ..writeln('// ignore: avoid_classes_with_only_static_members')
-      ..writeln('class Config {')
-      ..writeln('  static const String environment = \'$env\';')
+      ..writeln('class Config {');
+
+    if (argResults.wasParsed('env')) {
+      buffer.writeln('  static const String environment = \'$env\';');
+    }
+
+    buffer //
       ..writeln('  static const String androidApiKey = \'$androidKey\';')
       ..writeln('  static const String iosApiKey = \'$iosKey\';');
+
 
     for (String key in this.apiConfig.keys) {
       String variableName = camelize(key);
@@ -107,7 +113,9 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
     await initFirebase();
     await execute(saveAndroidConfig, 'Saving Firebase configuration for Android');
     await execute(saveIosConfig, 'Saving Firebase configuration for iOS');
-    await execute(_setIdeaEnv, 'Updating IntelliJ Idea run configuration.');
+    if (argResults.wasParsed('env')) {
+      await execute(_setIdeaEnv, 'Updating IntelliJ Idea run configuration.');
+    }
     await execute(_saveFlutterConfiguration, 'Saving Flutter configuration');
   }
 }

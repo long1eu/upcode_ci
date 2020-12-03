@@ -23,7 +23,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
   final Map<String, dynamic> _config;
 
   Map<String, dynamic> get config {
-    final Map<String, dynamic> data = Map<String, dynamic>.from(_config['api_config']) ?? <String, dynamic>{};
+    final Map<String, dynamic> data = Map<String, dynamic>.from(_config['api_config'] ?? <String, dynamic>{});
     return <String, dynamic>{...data};
   }
 
@@ -129,6 +129,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
   String get firebaseProjectName => 'projects/$projectId';
 
   String get baseAppId => _config['base_application_id'];
+
+  String get androidAppId => _config['android_application_id'] ?? _config['base_application_id'];
+
+  String get iosAppId => _config['ios_application_id'] ?? _config['base_application_id'];
 
   String get pwd => _config['pwd'];
 
@@ -275,6 +279,7 @@ bool fileFilter(String it) =>
     !it.startsWith('lib/src/generated') &&
     !it.endsWith('.g.dart') &&
     !it.endsWith('.freezed.dart') &&
+    !it.endsWith('.chopper.dart') &&
     !it.endsWith('.test_coverage.dart');
 
 Future<void> runCommand(

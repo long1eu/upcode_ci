@@ -23,6 +23,10 @@ class FlutterTestCommand extends UpcodeCommand {
 
       if (isFlutter) {
         await execute(
+          () => runCommand('flutter', <String>['pub', 'get'], workingDirectory: module),
+          'flutter pub get in $module',
+        );
+        await execute(
           () => runCommand(
             'flutter',
             <String>['test'],
@@ -31,6 +35,10 @@ class FlutterTestCommand extends UpcodeCommand {
           'Runs the all the test in the $module module.',
         );
       } else {
+        await execute(
+          () => runCommand('pub', <String>['get'], workingDirectory: module),
+          'pub get in $module',
+        );
         await execute(
           () => runCommand(
             'pub',

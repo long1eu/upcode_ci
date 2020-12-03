@@ -8,6 +8,14 @@ mixin EnvironmentMixin on UpcodeCommand {
   String get rawEnv => argResults['env'];
 
   Map<String, dynamic> get apiConfig {
+    if (config.isEmpty) {
+      return config;
+    }
+
+    String env = '';
+    if (argResults.wasParsed('env')) {
+      env = this.env;
+    }
     return <String, dynamic>{
       for (MapEntry<String, dynamic> entry
           in config.entries.where((MapEntry<String, dynamic> element) => element.value is! Map))

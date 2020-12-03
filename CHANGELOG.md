@@ -1,3 +1,14 @@
+## 0.2.3
+* add different app id for android and ios
+* the environment command doesn't need env anymore, this command will
+  be split up into config and env
+
+## 0.2.2
+* pub get before testing
+
+## 0.2.1
+* exclude chopper from formatting
+
 ## 0.2.0
 * remove `formatted_modules` and `analyzed_modules`
 * add `formatted`, `analyzed`, `tested` and `generated`
