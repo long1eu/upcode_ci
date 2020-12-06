@@ -274,7 +274,7 @@ final String redLine = '$red━━━━━━━━━━━━━━━━━�
 
 bool fileFilter(String it) =>
     it.endsWith('.dart') && //
-    it != '.dart_tool/build/entrypoint/build.dart' &&
+    !it.startsWith('.dart_tool/') &&
     !it.startsWith('lib/generated') &&
     !it.startsWith('lib/src/generated') &&
     !it.endsWith('.g.dart') &&

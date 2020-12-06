@@ -1,3 +1,8 @@
+## 0.2.3+1
+* add different app id for android and ios
+* the environment command doesn't need env anymore, this command will
+  be split up into config and env
+
 ## 0.2.3
 * add different app id for android and ios
 * the environment command doesn't need env anymore, this command will
