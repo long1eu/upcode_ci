@@ -274,9 +274,9 @@ final String redLine = '$red━━━━━━━━━━━━━━━━━�
 
 bool fileFilter(String it) =>
     it.endsWith('.dart') && //
-    !it.startsWith('.dart_tool/') &&
-    !it.startsWith('lib/generated') &&
-    !it.startsWith('lib/src/generated') &&
+    !it.startsWith('.dart_tool${path.separator}') &&
+    !it.startsWith('lib${path.separator}generated') &&
+    !it.startsWith('lib${path.separator}src${path.separator}generated') &&
     !it.endsWith('.g.dart') &&
     !it.endsWith('.freezed.dart') &&
     !it.endsWith('.chopper.dart') &&

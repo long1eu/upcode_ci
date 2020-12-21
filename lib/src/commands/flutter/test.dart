@@ -8,7 +8,14 @@ import 'package:path/path.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 
 class FlutterTestCommand extends UpcodeCommand {
-  FlutterTestCommand(Map<String, dynamic> config) : super(config);
+  FlutterTestCommand(Map<String, dynamic> config) : super(config) {
+    argParser.addFlag(
+      'coverage',
+      abbr: 'c',
+      help: 'Whether to generate the lcov.info file or not',
+      defaultsTo: true,
+    );
+  }
 
   @override
   final String name = 'flutter:test';
@@ -18,6 +25,7 @@ class FlutterTestCommand extends UpcodeCommand {
 
   @override
   FutureOr<dynamic> run() async {
+    final bool generatedCoverage = argResults['coverage'];
     for (final String module in testedModules) {
       final bool isFlutter = join(module, 'pubspec.yaml').readAsStringSync().contains('sdk: flutter');
 
@@ -29,7 +37,10 @@ class FlutterTestCommand extends UpcodeCommand {
         await execute(
           () => runCommand(
             'flutter',
-            <String>['test'],
+            <String>[
+              'test',
+              if (generatedCoverage) '--coverage',
+            ],
             workingDirectory: module,
           ),
           'Runs the all the test in the $module module.',
@@ -39,10 +50,11 @@ class FlutterTestCommand extends UpcodeCommand {
           () => runCommand('pub', <String>['get'], workingDirectory: module),
           'pub get in $module',
         );
+
         await execute(
           () => runCommand(
             'pub',
-            <String>['run', 'test'],
+            <String>['run', generatedCoverage ? 'test_coverage' : 'test'],
             workingDirectory: module,
           ),
           'Runs the all the test in the $module module.',

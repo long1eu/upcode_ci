@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:upcode_ci/src/commands/command.dart';
+import 'package:path/path.dart' as path;
 
 class FlutterFormatCommand extends UpcodeCommand {
   FlutterFormatCommand(Map<String, dynamic> config) : super(config) {
@@ -31,7 +32,7 @@ class FlutterFormatCommand extends UpcodeCommand {
       final List<String> files = Directory(module)
           .listSync(recursive: true, followLinks: false)
           .whereType<File>()
-          .map((File it) => it.path.split('$module/')[1])
+          .map((File it) => it.path.split('$module${path.separator}')[1])
           .where(fileFilter)
           .toList();
 
