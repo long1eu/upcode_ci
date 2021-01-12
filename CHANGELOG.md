@@ -1,3 +1,12 @@
+## 0.3.1
+* override configurations base on envs
+
+## 0.3.0
+* **Breaking** the way the version is saved in FRDB has changed, now the
+version is saved under the same name as the flutter module
+* add ability to specify flutter and private folder when
+invoking any command
+
 ## 0.2.5
 * add coverage to tests
 

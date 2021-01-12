@@ -3,12 +3,12 @@
 // on 10/05/2020
 
 import 'dart:async';
-import 'dart:convert';
+import 'dart:io';
 
-import 'package:http/http.dart';
 import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:upcode_ci/src/commands/command.dart';
+import 'package:upcode_ci/src/commands/version_mixin.dart';
 
 class FlutterVersionCommand extends UpcodeCommand {
   FlutterVersionCommand(Map<String, dynamic> config) : super(config) {
@@ -23,35 +23,7 @@ class FlutterVersionCommand extends UpcodeCommand {
   final String description = 'Update the flutter app version base on the cloud version value.';
 }
 
-mixin _VersionMixin on UpcodeCommand {
-  String get databaseUrl {
-    final String databaseKey = join(privateDir, 'firebase_database.key').readAsStringSync();
-    return 'https://$projectId.firebaseio.com/.json?auth=$databaseKey';
-  }
-
-  Version _version;
-
-  Version get version {
-    if (_version == null) {
-      throw StateError('You need to call getVersion() at least once.');
-    }
-
-    return _version;
-  }
-
-  Future<Version> _getVersion() async {
-    if (_version != null) {
-      return _version;
-    }
-
-    final Response data = await googleClient.get(databaseUrl);
-    final Map<dynamic, dynamic> values = jsonDecode(data.body) ?? <dynamic, dynamic>{};
-
-    return _version ??= Version.parse(values['versionName'] ?? '0.0.0');
-  }
-}
-
-class FlutterIncrementVersionCommand extends UpcodeCommand with _VersionMixin {
+class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
   FlutterIncrementVersionCommand(Map<String, dynamic> config) : super(config);
   @override
   final String name = 'increment';
@@ -62,31 +34,22 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with _VersionMixin {
 
   FlutterVersionCommand get parent => super.parent;
 
-  Future<void> _setVersion() async {
-    await googleClient.patch(
-      databaseUrl,
-      body: jsonEncode(
-        <String, dynamic>{
-          'versionCode': _version.versionCode,
-          'versionName': _version.versionName,
-        },
-      ),
-    );
-  }
-
   @override
   FutureOr<void> run() async {
-    await initFirebase();
-    Version version = await execute(_getVersion, 'Get current version from cloud');
+    if (!flutterGeneratedDir.dir.existsSync()) {
+      flutterGeneratedDir.dir.createSync(recursive: true);
+    }
+
+    Version version = await execute(getVersion, 'Get current version from cloud');
     version = await execute(version.increment, 'Increment Flutter version');
-    _version = version;
-    await execute(_setVersion, 'Set version back to cloud: $version');
-    await runner.run(['flutter:version', 'read']);
+    await execute(() => setVersion(version), 'Set version back to cloud: $version');
+    await runner.run(['flutter:version', 'read', ...argResults.arguments]);
   }
 }
 
-class FlutterReadVersionCommand extends UpcodeCommand with _VersionMixin {
+class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin {
   FlutterReadVersionCommand(Map<String, dynamic> config) : super(config);
+
   @override
   final String name = 'read';
 
@@ -96,7 +59,7 @@ class FlutterReadVersionCommand extends UpcodeCommand with _VersionMixin {
 
   FlutterVersionCommand get parent => super.parent;
 
-  void _updateYaml() {
+  void _updateYaml(Version version) {
     final String pubspecFile = join(flutterDir, 'pubspec.yaml');
 
     String yaml = pubspecFile.readAsStringSync();
@@ -110,8 +73,27 @@ class FlutterReadVersionCommand extends UpcodeCommand with _VersionMixin {
     pubspecFile.writeAsStringSync(yaml);
   }
 
-  void _updateIos() {
+  void _updateIos(Version version) {
     final String configFile = join(iosDir, 'Flutter', 'Generated.xcconfig');
+
+    if (!configFile.existsSync()) {
+      stdout.writeln('$configFile does not exist.');
+      return;
+    }
+
+    String config = configFile.readAsStringSync();
+    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NUMBER', '${version.versionCode}');
+    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NAME', version.versionName);
+    configFile.writeAsStringSync(config);
+  }
+
+  void _updateMacos(Version version) {
+    final String configFile = join(macosDir, 'Flutter', 'ephemeral', 'Flutter-Generated.xcconfig');
+
+    if (!configFile.existsSync()) {
+      stdout.writeln('$configFile does not exist.');
+      return;
+    }
 
     String config = configFile.readAsStringSync();
     config = _updateXcconfigField(config, 'FLUTTER_BUILD_NUMBER', '${version.versionCode}');
@@ -133,14 +115,20 @@ class FlutterReadVersionCommand extends UpcodeCommand with _VersionMixin {
     return data;
   }
 
-  void _updateAndroid() {
-    join(androidPropertiesDir, 'version.properties').writeAsStringSync(<String, Object>{
+  void _updateAndroid(Version version) {
+    final String versionProperties = join(androidPropertiesDir, 'version.properties');
+    if (!versionProperties.existsSync()) {
+      stdout.writeln('$versionProperties does not exist.');
+      return;
+    }
+
+    versionProperties.writeAsStringSync(<String, Object>{
       'versionCode': version.versionCode,
       'versionName': version.versionName,
     }.asProperties);
   }
 
-  void _updateFlutter() {
+  void _updateFlutter(Version version) {
     final StringBuffer buffer = StringBuffer()
       ..writeln('import \'package:pub_semver/pub_semver.dart\' as semver;')
       ..writeln()
@@ -157,11 +145,15 @@ class FlutterReadVersionCommand extends UpcodeCommand with _VersionMixin {
 
   @override
   FutureOr<void> run() async {
-    await initFirebase();
-    await execute(_getVersion, 'Get current version from cloud');
-    await execute(_updateYaml, 'Update pubspec.yaml file');
-    await execute(_updateIos, 'Updating Generated.xcconfig');
-    await execute(_updateAndroid, 'Updating version.properties');
-    await execute(_updateFlutter, 'Updating version.dart');
+    if (!flutterGeneratedDir.dir.existsSync()) {
+      flutterGeneratedDir.dir.createSync(recursive: true);
+    }
+
+    final Version version = await getVersion();
+    await execute(() => _updateYaml(version), 'Update pubspec.yaml file');
+    await execute(() => _updateIos(version), 'Updating ios Generated.xcconfig');
+    await execute(() => _updateMacos(version), 'Updating macos Flutter-Generated.xcconfig');
+    await execute(() => _updateAndroid(version), 'Updating version.properties');
+    await execute(() => _updateFlutter(version), 'Updating version.dart');
   }
 }

@@ -18,9 +18,25 @@ import 'package:pub_semver/pub_semver.dart';
 AutoRefreshingAuthClient googleClient;
 
 abstract class UpcodeCommand extends Command<dynamic> {
-  UpcodeCommand(this._config);
+  UpcodeCommand(this.baseConfig) {
+    argParser
+      ..addOption('flutter_dir', help: 'Specify the flutter module you want to run this command into.')
+      ..addOption('private_dir', help: 'Specify the private module.');
+  }
 
-  final Map<String, dynamic> _config;
+  final Map<String, dynamic> baseConfig;
+
+  void init() {}
+
+  Map<String, dynamic> get _config {
+    init();
+    return <String, dynamic>{
+      ...baseConfig,
+      // override
+      if (argResults.wasParsed('flutter_dir')) 'flutter_dir': argResults['flutter_dir'],
+      if (argResults.wasParsed('private_dir')) 'private_dir': argResults['private_dir'],
+    };
+  }
 
   Map<String, dynamic> get config {
     final Map<String, dynamic> data = Map<String, dynamic>.from(_config['api_config'] ?? <String, dynamic>{});
@@ -130,7 +146,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   String get baseAppId => _config['base_application_id'];
 
-  String get androidAppId => _config['android_application_id'] ?? _config['base_application_id'];
+  String get androidAppId {
+    print(jsonEncode(_config));
+    return _config['android_application_id'] ?? _config['base_application_id'];
+  }
 
   String get iosAppId => _config['ios_application_id'] ?? _config['base_application_id'];
 
@@ -194,6 +213,8 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   String get iosDir => path.join(flutterDir, 'ios');
 
+  String get macosDir => path.join(flutterDir, 'macos');
+
   String get flutterResDir => path.join(flutterDir, 'res');
 
   String get flutterGeneratedDir => path.join(flutterDir, 'lib', 'generated');
@@ -221,6 +242,8 @@ extension FileString on String {
   bool existsSync() => File(this).existsSync();
 
   void deleteSync() => File(this).deleteSync();
+
+  Directory get dir => Directory(this);
 }
 
 extension UpdateVersion on Version {

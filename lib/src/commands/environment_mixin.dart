@@ -5,6 +5,17 @@
 import 'package:upcode_ci/src/commands/command.dart';
 
 mixin EnvironmentMixin on UpcodeCommand {
+  @override
+  void init() {
+    baseConfig.addAll(<String, dynamic>{
+      if (baseConfig.containsKey('env') &&
+          baseConfig['env'] is Map &&
+          baseConfig['env'].containsKey(env) &&
+          baseConfig['env'][env] is Map)
+        ...baseConfig['env'][env],
+    });
+  }
+
   String get rawEnv => argResults['env'];
 
   Map<String, dynamic> get apiConfig {
