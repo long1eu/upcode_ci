@@ -1,3 +1,6 @@
+## 0.3.1+1
+* remove debug flag from firebase app distribution
+
 ## 0.3.1
 * override configurations base on envs
 

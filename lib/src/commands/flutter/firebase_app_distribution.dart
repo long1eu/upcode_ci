@@ -78,7 +78,6 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
           appId,
           '--groups',
           argResults['groups'].join(','),
-          '--debug'
         ],
         workingDirectory: pwd,
       ),
