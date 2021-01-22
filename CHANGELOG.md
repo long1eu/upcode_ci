@@ -1,3 +1,15 @@
+## 0.3.5
+* add option to set a specific version
+
+## 0.3.4
+* add support for setting the env in the version name
+
+## 0.3.3
+* remove env name restriction
+
+## 0.3.2
+* add protobuf generation
+
 ## 0.3.1+1
 * remove debug flag from firebase app distribution
 

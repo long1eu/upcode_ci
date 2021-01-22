@@ -146,10 +146,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   String get baseAppId => _config['base_application_id'];
 
-  String get androidAppId {
-    print(jsonEncode(_config));
-    return _config['android_application_id'] ?? _config['base_application_id'];
-  }
+  String get androidAppId => _config['android_application_id'] ?? _config['base_application_id'];
 
   String get iosAppId => _config['ios_application_id'] ?? _config['base_application_id'];
 
@@ -218,6 +215,12 @@ abstract class UpcodeCommand extends Command<dynamic> {
   String get flutterResDir => path.join(flutterDir, 'res');
 
   String get flutterGeneratedDir => path.join(flutterDir, 'lib', 'generated');
+
+  String get dartProtoDir => path.join(flutterGeneratedDir, 'protos');
+
+  String get protoSrcDir {
+    return _config['proto_dir'] ?? path.join(flutterResDir, 'protos');
+  }
 
   // tools
   String get toolsDir => path.join(pwd, 'ci', 'other_tools');

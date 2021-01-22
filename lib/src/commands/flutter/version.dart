@@ -8,12 +8,14 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:upcode_ci/src/commands/command.dart';
+import 'package:upcode_ci/src/commands/environment_mixin.dart';
 import 'package:upcode_ci/src/commands/version_mixin.dart';
 
 class FlutterVersionCommand extends UpcodeCommand {
   FlutterVersionCommand(Map<String, dynamic> config) : super(config) {
     addSubcommand(FlutterIncrementVersionCommand(config));
     addSubcommand(FlutterReadVersionCommand(config));
+    addSubcommand(FlutterSetVersionCommand(config));
   }
 
   @override
@@ -24,7 +26,10 @@ class FlutterVersionCommand extends UpcodeCommand {
 }
 
 class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
-  FlutterIncrementVersionCommand(Map<String, dynamic> config) : super(config);
+  FlutterIncrementVersionCommand(Map<String, dynamic> config) : super(config) {
+    argParser.addOption('env', abbr: 'e');
+  }
+
   @override
   final String name = 'increment';
 
@@ -47,8 +52,10 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
   }
 }
 
-class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin {
-  FlutterReadVersionCommand(Map<String, dynamic> config) : super(config);
+class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, EnvironmentMixin {
+  FlutterReadVersionCommand(Map<String, dynamic> config) : super(config) {
+    argParser.addOption('env', abbr: 'e');
+  }
 
   @override
   final String name = 'read';
@@ -56,6 +63,33 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin {
   @override
   final String description =
       'Read the cloud version of the Flutter app and update the flutter files to reflect that version.';
+
+  FlutterVersionCommand get parent => super.parent;
+
+  @override
+  FutureOr<void> run() async {
+    if (!flutterGeneratedDir.dir.existsSync()) {
+      flutterGeneratedDir.dir.createSync(recursive: true);
+    }
+
+    Version version = await getVersion();
+    await runner.run(['flutter:version', 'set', '--version', version.toString(), ...argResults.arguments]);
+  }
+}
+
+class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, EnvironmentMixin {
+  FlutterSetVersionCommand(Map<String, dynamic> config) : super(config) {
+    argParser //
+      ..addOption('env', abbr: 'e')
+      ..addOption('version', abbr: 'v');
+  }
+
+  @override
+  final String name = 'set';
+
+  @override
+  final String description =
+      'Set a version regardless of the the cloud version for the Flutter app and update the flutter files to reflect that version.';
 
   FlutterVersionCommand get parent => super.parent;
 
@@ -149,7 +183,8 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin {
       flutterGeneratedDir.dir.createSync(recursive: true);
     }
 
-    final Version version = await getVersion();
+    Version version = Version.parse(argResults['version']);
+    version = Version.parse('$version${argResults.wasParsed('env') ? '+$env' : ''}');
     await execute(() => _updateYaml(version), 'Update pubspec.yaml file');
     await execute(() => _updateIos(version), 'Updating ios Generated.xcconfig');
     await execute(() => _updateMacos(version), 'Updating macos Flutter-Generated.xcconfig');

@@ -38,10 +38,10 @@ mixin EnvironmentMixin on UpcodeCommand {
   }
 
   String get env {
-    final String env = rawEnv;
-    if (env != 'prod' && env != 'dev' && !env.startsWith('feature/')) {
-      throw StateError('The environment can only be \'prod\', \'dev\' or \'feature/*\'.');
+    if (!argResults.wasParsed('env')) {
+      return null;
     }
+    final String env = rawEnv;
 
     if (env.startsWith('feature/')) {
       final List<String> featureParts = env.split('feature/');
