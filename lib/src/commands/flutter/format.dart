@@ -5,8 +5,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:upcode_ci/src/commands/command.dart';
 import 'package:path/path.dart' as path;
+import 'package:upcode_ci/src/commands/command.dart';
 
 class FlutterFormatCommand extends UpcodeCommand {
   FlutterFormatCommand(Map<String, dynamic> config) : super(config) {

@@ -1,3 +1,12 @@
+## 0.3.7
+* read database url from google-services.json
+
+## 0.3.6
+* add release notes for firebase app distribution
+
+## 0.3.5+1
+* normalize flutter module dirname
+
 ## 0.3.5
 * add option to set a specific version
 

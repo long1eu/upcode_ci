@@ -28,6 +28,11 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
         abbr: 'g',
         help: 'E comma separated list of group aliases to distribute to.',
         defaultsTo: ['testers'],
+      )
+      ..addOption(
+        'release-notes',
+        abbr: 'n',
+        help: 'A file that contains the release notes for this version',
       );
   }
 
@@ -78,6 +83,10 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
           appId,
           '--groups',
           argResults['groups'].join(','),
+          if (argResults.wasParsed('release-notes')) ...[
+            '--release-notes-file',
+            argResults['release-notes'],
+          ]
         ],
         workingDirectory: pwd,
       ),

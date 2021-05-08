@@ -54,6 +54,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
               FirebaseApi.FirebaseScope,
               FirebaseApi.CloudPlatformScope,
               AndroidpublisherApi.AndroidpublisherScope,
+              "https://www.googleapis.com/auth/firebase.database",
             ],
           );
         },
