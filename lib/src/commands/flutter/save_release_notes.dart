@@ -19,9 +19,9 @@ class SaveReleaseNotesCommand extends UpcodeCommand {
   @override
   final String description = 'Save the latest commits as release notes';
 
-  String get databaseUrl {
+  Uri get databaseUrl {
     final String databaseKey = join(privateDir, 'firebase_database.key').readAsStringSync();
-    return 'https://$projectId.firebaseio.com/.json?auth=$databaseKey';
+    return Uri.parse('https://$projectId.firebaseio.com/.json?auth=$databaseKey');
   }
 
   Future<String> _getCommit() async {

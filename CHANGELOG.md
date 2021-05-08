@@ -1,5 +1,17 @@
-## 0.3.7
+## 0.4.4
 * read database url from google-services.json
+
+## 0.4.3
+* don't generate the import files anymore
+
+## 0.4.2
+* use an absolute path for modules when iterating over them
+
+## 0.4.1
+* update fad to accept a firebase token
+
+## 0.4.0
+* add api implementation
 
 ## 0.3.6
 * add release notes for firebase app distribution

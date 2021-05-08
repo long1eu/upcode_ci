@@ -95,11 +95,11 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
       ..writeln('  static const String iosApiKey = \'$iosKey\';');
 
 
-    for (String key in this.apiConfig.keys) {
+    for (String key in this.flutterApiConfig.keys) {
       String variableName = camelize(key);
       final List<String> parts = variableName.split('');
       variableName = [parts.first.toLowerCase(), ...parts.skip(1)].join('');
-      buffer.writeln('  static const String ${variableName} = \'${this.apiConfig[key]}\';');
+      buffer.writeln('  static const String ${variableName} = \'${this.flutterApiConfig[key]}\';');
     }
     buffer //
       ..writeln('}')

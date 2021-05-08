@@ -5,6 +5,8 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:upcode_ci/src/commands/api/index.dart';
+import 'package:upcode_ci/src/commands/environment.dart';
 import 'package:upcode_ci/src/commands/flutter/analyze.dart';
 import 'package:upcode_ci/src/commands/flutter/fastlane.dart';
 import 'package:upcode_ci/src/commands/flutter/firebase_app_distribution.dart';
@@ -12,6 +14,7 @@ import 'package:upcode_ci/src/commands/flutter/format.dart';
 import 'package:upcode_ci/src/commands/flutter/save_release_notes.dart';
 import 'package:upcode_ci/src/commands/flutter/test.dart';
 import 'package:upcode_ci/src/commands/index.dart';
+import 'package:upcode_ci/src/commands/protos.dart';
 import 'package:yaml/yaml.dart';
 
 void main(List<String> args) {
@@ -38,5 +41,10 @@ void main(List<String> args) {
     ..addCommand(FlutterFormatCommand(config))
     ..addCommand(FlutterTestCommand(config))
     ..addCommand(SaveReleaseNotesCommand(config))
+    ..addCommand(ProtosCommand(config))
+    ..addCommand(ApiDeployCommand(config))
+    ..addCommand(ApiEnvironmentCommand(config))
+    ..addCommand(ApiVersionCommand(config))
+    ..addCommand(EnvironmentCommand(config))
     ..run(args);
 }

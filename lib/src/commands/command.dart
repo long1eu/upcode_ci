@@ -21,7 +21,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
   UpcodeCommand(this.baseConfig) {
     argParser
       ..addOption('flutter_dir', help: 'Specify the flutter module you want to run this command into.')
-      ..addOption('private_dir', help: 'Specify the private module.');
+      ..addOption('private_dir', help: 'Specify the private module.')
+      ..addOption('api_dir', help: 'Specify the api module.')
+      ..addOption('protos_dir', help: 'Specify the protos module.')
+      ..addOption('google_project_location', help: 'Specify the project location.');
   }
 
   final Map<String, dynamic> baseConfig;
@@ -35,11 +38,19 @@ abstract class UpcodeCommand extends Command<dynamic> {
       // override
       if (argResults.wasParsed('flutter_dir')) 'flutter_dir': argResults['flutter_dir'],
       if (argResults.wasParsed('private_dir')) 'private_dir': argResults['private_dir'],
+      if (argResults.wasParsed('api_dir')) 'api_dir': argResults['api_dir'],
+      if (argResults.wasParsed('google_project_location'))
+        'google_project_location': argResults['google_project_location'],
     };
   }
 
-  Map<String, dynamic> get config {
+  Map<String, dynamic> get flutterConfig {
     final Map<String, dynamic> data = Map<String, dynamic>.from(_config['api_config'] ?? <String, dynamic>{});
+    return <String, dynamic>{...data};
+  }
+
+  Map<String, dynamic> get apiConfig {
+    final Map<String, dynamic> data = Map<String, dynamic>.from(_config['api'] ?? <String, dynamic>{});
     return <String, dynamic>{...data};
   }
 
@@ -51,10 +62,9 @@ abstract class UpcodeCommand extends Command<dynamic> {
           googleClient = await clientViaServiceAccount(
             ServiceAccountCredentials.fromJson(serviceAccount),
             <String>[
-              FirebaseApi.FirebaseScope,
-              FirebaseApi.CloudPlatformScope,
-              AndroidpublisherApi.AndroidpublisherScope,
-              "https://www.googleapis.com/auth/firebase.database",
+              FirebaseManagementApi.firebaseScope,
+              FirebaseManagementApi.cloudPlatformScope,
+              AndroidPublisherApi.androidpublisherScope,
             ],
           );
         },
@@ -117,28 +127,28 @@ abstract class UpcodeCommand extends Command<dynamic> {
     return result;
   }
 
-  ProjectsAndroidAppsResourceApi get androidAppsApi {
-    return FirebaseApi(googleClient).projects.androidApps;
+  ProjectsAndroidAppsResource get androidAppsApi {
+    return FirebaseManagementApi(googleClient).projects.androidApps;
   }
 
-  ProjectsIosAppsResourceApi get iosAppsApi {
-    return FirebaseApi(googleClient).projects.iosApps;
+  ProjectsIosAppsResource get iosAppsApi {
+    return FirebaseManagementApi(googleClient).projects.iosApps;
   }
 
-  OperationsResourceApi get operationsApi {
-    return FirebaseApi(googleClient).operations;
+  OperationsResource get operationsApi {
+    return FirebaseManagementApi(googleClient).operations;
   }
 
-  ProjectsDatabasesDocumentsResourceApi get firestoreDocuments {
+  ProjectsDatabasesDocumentsResource get firestoreDocuments {
     return FirestoreApi(googleClient).projects.databases.documents;
   }
 
-  ProjectsDatabasesResourceApi get databases {
+  ProjectsDatabasesResource get databases {
     return FirestoreApi(googleClient).projects.databases;
   }
 
-  InappproductsResourceApi get inappproducts {
-    return AndroidpublisherApi(googleClient).inappproducts;
+  InappproductsResource get inappproducts {
+    return AndroidPublisherApi(googleClient).inappproducts;
   }
 
   String get projectId => _config['google_project_id'];
@@ -165,15 +175,15 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   List<String> get modules {
     if (_config.containsKey('modules')) {
-      return List<String>.from(_config['modules']);
+      return List<String>.from(_config['modules']).map((String item) => item.dirName).toList();
     } else {
-      return <String>[flutterDir];
+      return <String>[flutterDir.dirName];
     }
   }
 
   List<String> get generatedModules {
     if (_config.containsKey('generated')) {
-      return List<String>.from(_config['generated']);
+      return List<String>.from(_config['generated']).map((String item) => item.dirName).toList();
     } else {
       return <String>[];
     }
@@ -181,7 +191,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   List<String> get analyzedModules {
     if (_config.containsKey('analyzed')) {
-      return List<String>.from(_config['analyzed']);
+      return List<String>.from(_config['analyzed']).map((String item) => item.dirName).toList();
     } else {
       return modules;
     }
@@ -189,7 +199,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   List<String> get formattedModules {
     if (_config.containsKey('formatted')) {
-      return List<String>.from(_config['formatted']);
+      return List<String>.from(_config['formatted']).map((String item) => item.dirName).toList();
     } else {
       return modules;
     }
@@ -197,7 +207,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   List<String> get testedModules {
     if (_config.containsKey('tested')) {
-      return List<String>.from(_config['tested']);
+      return List<String>.from(_config['tested']).map((String item) => item.dirName).toList();
     } else {
       return modules;
     }
@@ -219,12 +229,23 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   String get dartProtoDir => path.join(flutterGeneratedDir, 'protos');
 
-  String get protoSrcDir {
-    return _config['proto_dir'] ?? path.join(flutterResDir, 'protos');
-  }
-
   // tools
   String get toolsDir => path.join(pwd, 'ci', 'other_tools');
+
+  // api
+  String get apiDir => _config['api_dir'];
+
+  String get projectLocation => _config['google_project_location'];
+
+  String get apiConfigFile => path.join(apiDir, 'api_config.yaml');
+
+  String get protoSrcDir {
+    return _config['protos_dir'] ?? path.join(flutterResDir, 'protos');
+  }
+
+  String get protoApiOutDir => path.join(apiDir, 'src', 'proto');
+
+  String get apiDescriptor => join(protoSrcDir, 'api_descriptor.pb');
 }
 
 extension FileString on String {
@@ -248,6 +269,10 @@ extension FileString on String {
   void deleteSync() => File(this).deleteSync();
 
   Directory get dir => Directory(this);
+
+  String get dirName {
+    return path.normalize(dir.absolute.path);
+  }
 }
 
 extension UpdateVersion on Version {
@@ -277,15 +302,6 @@ extension GradleProperties on Map<String, dynamic> {
     }
     return buffer.toString();
   }
-}
-
-Future<Operation> wait(OperationsResourceApi operationsApi, String operationName) async {
-  Operation operation = await operationsApi.get(operationName);
-  while (!(operation.done ?? false)) {
-    operation = await operationsApi.get(operationName);
-    await Future.delayed(const Duration(seconds: 1));
-  }
-  return operation;
 }
 
 final bool hasColor = stdout.supportsAnsiEscapes;

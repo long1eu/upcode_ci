@@ -33,6 +33,11 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
         'release-notes',
         abbr: 'n',
         help: 'A file that contains the release notes for this version',
+      )
+      ..addOption(
+        'token',
+        abbr: 't',
+        help: 'Provide the firebase token you want to use',
       );
   }
 
@@ -86,6 +91,10 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
           if (argResults.wasParsed('release-notes')) ...[
             '--release-notes-file',
             argResults['release-notes'],
+          ],
+          if (argResults.wasParsed('token')) ...[
+            '--token',
+            argResults['token'],
           ]
         ],
         workingDirectory: pwd,

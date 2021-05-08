@@ -47,7 +47,10 @@ mixin ApplicationMixin on EnvironmentMixin {
 
   Future<AndroidApp> getAndroidApp() async {
     final ListAndroidAppsResponse data = await androidAppsApi.list(firebaseProjectName);
-    final AndroidApp app = data.apps.firstWhere((element) => element.packageName == androidAppId, orElse: () => null);
+    final AndroidApp app = data.apps.firstWhere((element) {
+      print('object: ${element.packageName}');
+      return element.packageName == androidAppId;
+    }, orElse: () => null);
     if (app == null) {
       throw ArgumentError(
           'This environment has not been created yet. You need to first call: \nflutter:environment create --env $rawEnv');

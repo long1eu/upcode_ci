@@ -5,6 +5,8 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:upcode_ci/src/commands/api/index.dart';
+import 'package:upcode_ci/src/commands/environment.dart';
 import 'package:upcode_ci/src/commands/flutter/analyze.dart';
 import 'package:upcode_ci/src/commands/flutter/fastlane.dart';
 import 'package:upcode_ci/src/commands/flutter/firebase_app_distribution.dart';
@@ -40,5 +42,9 @@ void main(List<String> args) {
     ..addCommand(FlutterTestCommand(config))
     ..addCommand(SaveReleaseNotesCommand(config))
     ..addCommand(ProtosCommand(config))
+    ..addCommand(ApiDeployCommand(config))
+    ..addCommand(ApiEnvironmentCommand(config))
+    ..addCommand(ApiVersionCommand(config))
+    ..addCommand(EnvironmentCommand(config))
     ..run(args);
 }

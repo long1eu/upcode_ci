@@ -31,15 +31,15 @@ mixin VersionMixin on UpcodeCommand {
   }
 
   Future<Version> getVersion() async {
-    final Response data = await get(databaseUrl);
+    final Response data = await get(Uri.parse(databaseUrl));
     final Map<dynamic, dynamic> values = jsonDecode(data.body) ?? <dynamic, dynamic>{};
 
     return Version.parse(values['versionName'] ?? '0.0.0');
   }
 
   Future<void> setVersion(Version version) async {
-    final result = await patch(
-      databaseUrl,
+    await patch(
+      Uri.parse(databaseUrl),
       body: jsonEncode(
         <String, dynamic>{
           'versionCode': version.versionCode,
@@ -47,8 +47,5 @@ mixin VersionMixin on UpcodeCommand {
         },
       ),
     );
-
-    print(databaseUrl);
-    print(result.body);
   }
 }
