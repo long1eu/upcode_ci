@@ -145,7 +145,7 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
     await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
     await runner.run(<String>['api:version', 'increment']);
     await execute(
-      () => runCommand('yarn', <String>['build'], workingDirectory: apiDir),
+      () => runCommand('npm', <String>['run', 'build'], workingDirectory: apiDir),
       'Build service sources',
     );
 
@@ -217,7 +217,7 @@ class AllDeployCommand extends UpcodeCommand with EnvironmentMixin {
   @override
   FutureOr<dynamic> run() async {
     await execute(
-      () => runCommand('yarn', <String>['install', '--frozen-lockfile'], workingDirectory: apiDir),
+      () => runCommand('npm', <String>['install'], workingDirectory: apiDir),
       'Get service dependencies',
     );
     await runner.run(<String>['protos', '--js']);

@@ -16,22 +16,21 @@ mixin VersionMixin on UpcodeCommand {
     return split(normalize(File(flutterDir).absolute.path)).last;
   }
 
-  String get databaseUrl {
+  Uri get databaseUrl {
     final String databaseKey = join(privateDir, 'firebase_database.key').readAsStringSync();
-
     final Map<String, dynamic> data =
         Map<String, dynamic>.from(jsonDecode(join(androidAppDir, 'google-services.json').readAsStringSync()));
 
-    final String url = data['project_info'] == null ? null : data['project_info']['firebase_url'];
-    if (url != null) {
-      return '${url}/$versionType/.json?auth=$databaseKey';
+    if (data['project_info'] != null && data['project_info']['firebase_url'] != null) {
+      return Uri.parse('${data['project_info']['firebase_url']}/$versionType/.json?auth=$databaseKey');
     }
 
-    return 'https://$projectId.firebaseio.com/$versionType/.json?auth=$databaseKey';
+    return Uri.parse('https://$projectId.firebaseio.com/$versionType/.json?auth=$databaseKey');
   }
 
   Future<Version> getVersion() async {
-    final Response data = await get(Uri.parse(databaseUrl));
+    final Response data = await get(databaseUrl);
+
     final Map<dynamic, dynamic> values = jsonDecode(data.body) ?? <dynamic, dynamic>{};
 
     return Version.parse(values['versionName'] ?? '0.0.0');
@@ -39,7 +38,7 @@ mixin VersionMixin on UpcodeCommand {
 
   Future<void> setVersion(Version version) async {
     await patch(
-      Uri.parse(databaseUrl),
+      databaseUrl,
       body: jsonEncode(
         <String, dynamic>{
           'versionCode': version.versionCode,

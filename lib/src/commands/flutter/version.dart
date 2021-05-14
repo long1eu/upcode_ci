@@ -73,7 +73,10 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
     }
 
     Version version = await getVersion();
-    await runner.run(['flutter:version', 'set', '--version', version.toString(), ...argResults.arguments]);
+    await execute(
+      () => runner.run(['flutter:version', 'set', '--version', version.toString(), ...argResults.arguments]),
+      'Setting version $version',
+    );
   }
 }
 

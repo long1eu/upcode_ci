@@ -1,6 +1,6 @@
 name: upcode_ci
 description: A starting point for Dart libraries or applications.
-version: 0.4.4
+version: 0.4.5+1
 repository: https://github.com/long1eu/upcode_ci
 executables:
   upcode:
@@ -18,11 +18,11 @@ dependencies:
   uuid: ^3.0.4
   intl: ^0.17.0
   strings: ^0.2.1
-  args: ^2.1.0
+  args: ^2.0.0
   xml: ^5.1.0
-  http: ^0.13.3
-  http_multi_server: ^3.0.1
-  xml2json: ^5.1.0
+  http: ^0.13.1
+  http_multi_server: ^3.0.0
+  xml2json: ^5.0.0
   yaml: ^3.1.0
 
 dev_dependencies:

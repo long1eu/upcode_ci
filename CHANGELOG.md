@@ -1,3 +1,9 @@
+## 0.4.5+1
+* print version when reading it
+
+## 0.4.5
+* remove yarn dependency
+
 ## 0.4.4
 * read database url from google-services.json
 
