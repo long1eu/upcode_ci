@@ -24,7 +24,9 @@ class ApiEnvironmentCommand extends UpcodeCommand {
 
 class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, VersionMixin {
   ApiSetEnvironmentCommand(Map<String, dynamic> config) : super(config) {
-    argParser.addOption('env', abbr: 'e');
+    argParser //
+      ..addOption('env', abbr: 'e')
+      ..addOption('type', abbr: 't', defaultsTo: 'api', help: 'The name used to save the version at.');
   }
 
   @override
@@ -33,7 +35,8 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   @override
   final String description = 'Set an already existing environment to API.';
 
-  String get versionType => 'api';
+  @override
+  String get versionType => argResults['type'];
 
   void _updateYamlField(List<String> lines, String field, String value) {
     int index = lines.indexWhere((element) => element.startsWith('$field:'));

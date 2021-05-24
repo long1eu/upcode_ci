@@ -27,7 +27,9 @@ class FlutterVersionCommand extends UpcodeCommand {
 
 class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
   FlutterIncrementVersionCommand(Map<String, dynamic> config) : super(config) {
-    argParser.addOption('env', abbr: 'e');
+    argParser //
+      ..addOption('env', abbr: 'e')
+      ..addOption('type', abbr: 't', help: 'The name used to save the version at.');
   }
 
   @override
@@ -38,6 +40,15 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       'Increment the cloud version of the Flutter app and update the flutter files to reflect that version.';
 
   FlutterVersionCommand get parent => super.parent;
+
+  @override
+  String get versionType {
+    if (argResults.wasParsed('type')) {
+      return argResults['type'];
+    } else {
+      return super.versionType;
+    }
+  }
 
   @override
   FutureOr<void> run() async {
@@ -54,7 +65,9 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
 
 class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, EnvironmentMixin {
   FlutterReadVersionCommand(Map<String, dynamic> config) : super(config) {
-    argParser.addOption('env', abbr: 'e');
+    argParser //
+      ..addOption('env', abbr: 'e')
+      ..addOption('type', abbr: 't', help: 'The name used to save the version at.');
   }
 
   @override
@@ -65,6 +78,15 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
       'Read the cloud version of the Flutter app and update the flutter files to reflect that version.';
 
   FlutterVersionCommand get parent => super.parent;
+
+  @override
+  String get versionType {
+    if (argResults.wasParsed('type')) {
+      return argResults['type'];
+    } else {
+      return super.versionType;
+    }
+  }
 
   @override
   FutureOr<void> run() async {
@@ -84,7 +106,8 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
   FlutterSetVersionCommand(Map<String, dynamic> config) : super(config) {
     argParser //
       ..addOption('env', abbr: 'e')
-      ..addOption('version', abbr: 'v');
+      ..addOption('version', abbr: 'v')
+      ..addOption('type', abbr: 't', help: 'The name used to save the version at.');
   }
 
   @override
@@ -95,6 +118,15 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
       'Set a version regardless of the the cloud version for the Flutter app and update the flutter files to reflect that version.';
 
   FlutterVersionCommand get parent => super.parent;
+
+  @override
+  String get versionType {
+    if (argResults.wasParsed('type')) {
+      return argResults['type'];
+    } else {
+      return super.versionType;
+    }
+  }
 
   void _updateYaml(Version version) {
     final String pubspecFile = join(flutterDir, 'pubspec.yaml');

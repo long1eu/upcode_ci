@@ -23,7 +23,9 @@ class ApiVersionCommand extends UpcodeCommand {
 }
 
 class ApiIncrementVersionCommand extends UpcodeCommand with VersionMixin {
-  ApiIncrementVersionCommand(Map<String, dynamic> config) : super(config);
+  ApiIncrementVersionCommand(Map<String, dynamic> config) : super(config) {
+    argParser.addOption('type', abbr: 't', defaultsTo: 'api', help: 'The name used to save the version at.');
+  }
 
   @override
   final String name = 'increment';
@@ -34,7 +36,8 @@ class ApiIncrementVersionCommand extends UpcodeCommand with VersionMixin {
 
   ApiVersionCommand get parent => super.parent;
 
-  String get versionType => 'api';
+  @override
+  String get versionType => argResults['type'];
 
   @override
   FutureOr<void> run() async {
@@ -50,7 +53,9 @@ class ApiIncrementVersionCommand extends UpcodeCommand with VersionMixin {
 }
 
 class ApiReadVersionCommand extends UpcodeCommand with VersionMixin {
-  ApiReadVersionCommand(Map<String, dynamic> config) : super(config);
+  ApiReadVersionCommand(Map<String, dynamic> config) : super(config) {
+    argParser.addOption('type', abbr: 't', defaultsTo: 'api', help: 'The name used to save the version at.');
+  }
 
   @override
   final String name = 'read';
@@ -61,7 +66,8 @@ class ApiReadVersionCommand extends UpcodeCommand with VersionMixin {
 
   ApiVersionCommand get parent => super.parent;
 
-  String get versionType => 'api';
+  @override
+  String get versionType => argResults['type'];
 
   Future<void> _updateConfig() async {
     final Version version = await getVersion();

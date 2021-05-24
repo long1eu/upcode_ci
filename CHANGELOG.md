@@ -1,3 +1,6 @@
+## 0.4.6
+* allow setting the version type
+
 ## 0.4.5+1
 * print version when reading it
 
