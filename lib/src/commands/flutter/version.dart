@@ -106,6 +106,7 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
   FlutterSetVersionCommand(Map<String, dynamic> config) : super(config) {
     argParser //
       ..addOption('env', abbr: 'e')
+      ..addFlag('update-cloud', help: 'Mirror the change in cloud also')
       ..addOption('version', abbr: 'v')
       ..addOption('type', abbr: 't', help: 'The name used to save the version at.');
   }
@@ -225,5 +226,9 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
     await execute(() => _updateMacos(version), 'Updating macos Flutter-Generated.xcconfig');
     await execute(() => _updateAndroid(version), 'Updating version.properties');
     await execute(() => _updateFlutter(version), 'Updating version.dart');
+
+    if (argResults.wasParsed('update-cloud') && (argResults['update-cloud'] ?? false)) {
+      await execute(() => setVersion(version), 'Set the version back to cloud');
+    }
   }
 }

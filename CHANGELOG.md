@@ -1,3 +1,6 @@
+## 0.4.7
+* allow setting the version back to cloud with version set
+
 ## 0.4.6
 * allow setting the version type
 
