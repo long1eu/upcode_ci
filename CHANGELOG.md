@@ -1,3 +1,7 @@
+## 0.5.0
+* BREAKING CHANGE: don't increment the version when deploying api, just
+read the current one
+
 ## 0.4.7
 * allow setting the version back to cloud with version set
 

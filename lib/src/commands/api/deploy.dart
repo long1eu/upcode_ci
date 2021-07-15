@@ -143,7 +143,7 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
   @override
   FutureOr<dynamic> run() async {
     await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
-    await runner.run(<String>['api:version', 'increment']);
+    await runner.run(<String>['api:version', 'read']);
     await execute(
       () => runCommand('npm', <String>['run', 'build'], workingDirectory: apiDir),
       'Build service sources',
