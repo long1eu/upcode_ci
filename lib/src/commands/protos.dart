@@ -88,7 +88,7 @@ class ProtosCommand extends UpcodeCommand {
               '--ts_out=$protoApiOutDir',
               '--grpc_out=$protoApiOutDir',
               '--plugin=protoc-gen-grpc=${join(apiDir, 'node_modules', '.bin', 'grpc_tools_node_protoc_plugin')}',
-              '--plugin=protoc-gen-ts=${join(apiDir, 'node_modules', '.bin', 'protoc-gen-ts')}',
+              '--plugin=protoc-gen-ts=${join(apiDir, 'node_modules', '.bin', 'protoc-gen-ts${Platform.isWindows ? '.cmd' : ''}')}',
             ],
             if (buildDart) '--dart_out=grpc:$dartProtoDir',
             if (descriptor) ...<String>[

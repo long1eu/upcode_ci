@@ -1,3 +1,6 @@
+## 0.5.1+1
+* add cmd to protoc ts compiler
+
 ## 0.5.1
 * use os path separator on upcode.yaml paths
 
