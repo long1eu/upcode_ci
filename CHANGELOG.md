@@ -1,3 +1,6 @@
+## 0.5.1
+* use os path separator on upcode.yaml paths
+
 ## 0.5.0
 * BREAKING CHANGE: don't increment the version when deploying api, just
 read the current one

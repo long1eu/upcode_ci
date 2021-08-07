@@ -168,10 +168,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   String get workspaceIdea => path.join(ideaDir, 'workspace.xml');
 
-  String get privateDir => _config['private_dir'];
+  String get privateDir => _config['private_dir'].replaceAll('/', path.separator);
 
   // flutter
-  String get flutterDir => _config['flutter_dir'];
+  String get flutterDir => _config['flutter_dir'].replaceAll('/', path.separator);
 
   List<String> get modules {
     if (_config.containsKey('modules')) {
@@ -233,14 +233,14 @@ abstract class UpcodeCommand extends Command<dynamic> {
   String get toolsDir => path.join(pwd, 'ci', 'other_tools');
 
   // api
-  String get apiDir => _config['api_dir'];
+  String get apiDir => _config['api_dir'].replaceAll('/', path.separator);
 
   String get projectLocation => _config['google_project_location'];
 
   String get apiConfigFile => path.join(apiDir, 'api_config.yaml');
 
   String get protoSrcDir {
-    return _config['protos_dir'] ?? path.join(flutterResDir, 'protos');
+    return _config['protos_dir'].replaceAll('/', path.separator) ?? path.join(flutterResDir, 'protos');
   }
 
   String get protoApiOutDir => path.join(apiDir, 'src', 'proto');
