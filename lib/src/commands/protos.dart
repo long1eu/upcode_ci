@@ -78,6 +78,8 @@ class ProtosCommand extends UpcodeCommand {
       await Directory(dartProtoDir).createSync(recursive: true);
     }
 
+    final String toolsExtension = Platform.isWindows ? '.cmd' : '';
+
     await execute(
       () {
         return runCommand(
@@ -87,8 +89,8 @@ class ProtosCommand extends UpcodeCommand {
               '--js_out=import_style=commonjs,binary:$protoApiOutDir',
               '--ts_out=$protoApiOutDir',
               '--grpc_out=$protoApiOutDir',
-              '--plugin=protoc-gen-grpc=${join(apiDir, 'node_modules', '.bin', 'grpc_tools_node_protoc_plugin')}',
-              '--plugin=protoc-gen-ts=${join(apiDir, 'node_modules', '.bin', 'protoc-gen-ts${Platform.isWindows ? '.cmd' : ''}')}',
+              '--plugin=protoc-gen-grpc=${join(apiDir, 'node_modules', '.bin', 'grpc_tools_node_protoc_plugin$toolsExtension')}',
+              '--plugin=protoc-gen-ts=${join(apiDir, 'node_modules', '.bin', 'protoc-gen-ts$toolsExtension')}',
             ],
             if (buildDart) '--dart_out=grpc:$dartProtoDir',
             if (descriptor) ...<String>[

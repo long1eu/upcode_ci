@@ -1,3 +1,6 @@
+## 0.5.1+2
+* add cmd to protoc ts tools
+
 ## 0.5.1+1
 * add cmd to protoc ts compiler
 
