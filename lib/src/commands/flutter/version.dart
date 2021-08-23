@@ -300,6 +300,10 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
       versionName = version.versionName;
       versionCode = version.versionCode;
     } else {
+      if (!argResults.wasParsed('versionName') || !argResults.wasParsed('versionCode')) {
+        throw ArgumentError('You need to pass versionName and versionCode when not specifying version.');
+      }
+
       versionName = argResults['versionName'];
       versionCode = int.parse(argResults['versionCode']);
 

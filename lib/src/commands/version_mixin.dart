@@ -30,6 +30,9 @@ mixin VersionMixin on UpcodeCommand {
 
   Future<Map<String, dynamic>> getRawVersion() async {
     final Response data = await get(databaseUrl);
+    if (data.statusCode < 200 || data.statusCode >= 300) {
+      throw StateError(data.body);
+    }
 
     final Map<String, dynamic> values = jsonDecode(data.body) ?? <String, dynamic>{};
     return values;
@@ -48,6 +51,10 @@ mixin VersionMixin on UpcodeCommand {
   }
 
   Future<void> setRawVersion(Map<String, dynamic> version) async {
-    await patch(databaseUrl, body: jsonEncode(version));
+    final Response data = await patch(databaseUrl, body: jsonEncode(version));
+
+    if (data.statusCode < 200 || data.statusCode >= 300) {
+      throw StateError(data.body);
+    }
   }
 }
