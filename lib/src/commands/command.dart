@@ -280,7 +280,7 @@ extension UpdateVersion on Version {
 
   String get versionName => this.toString();
 
-  Version increment() {
+  Version patchVersion() {
     if (this.minor >= 99) {
       return nextMajor;
     } else if (this.patch >= 999) {
@@ -288,6 +288,10 @@ extension UpdateVersion on Version {
     } else {
       return nextPatch;
     }
+  }
+
+  Version releaseVersion() {
+    return nextMinor;
   }
 }
 

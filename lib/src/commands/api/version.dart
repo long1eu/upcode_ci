@@ -46,7 +46,7 @@ class ApiIncrementVersionCommand extends UpcodeCommand with VersionMixin {
     }
 
     Version version = await execute(getVersion, 'Get current version from cloud');
-    version = await execute(version.increment, 'Increment api version');
+    version = await execute(version.patchVersion, 'Increment api version');
     await execute(() => setVersion(version), 'Set version back to cloud: $version');
     await runner.run(['api:version', 'read']);
   }

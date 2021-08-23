@@ -28,23 +28,26 @@ mixin VersionMixin on UpcodeCommand {
     return Uri.parse('https://$projectId.firebaseio.com/$versionType/.json?auth=$databaseKey');
   }
 
-  Future<Version> getVersion() async {
+  Future<Map<String, dynamic>> getRawVersion() async {
     final Response data = await get(databaseUrl);
 
-    final Map<dynamic, dynamic> values = jsonDecode(data.body) ?? <dynamic, dynamic>{};
+    final Map<String, dynamic> values = jsonDecode(data.body) ?? <String, dynamic>{};
+    return values;
+  }
 
+  Future<Version> getVersion() async {
+    final Map<dynamic, dynamic> values = await getRawVersion();
     return Version.parse(values['versionName'] ?? '0.0.0');
   }
 
   Future<void> setVersion(Version version) async {
-    await patch(
-      databaseUrl,
-      body: jsonEncode(
-        <String, dynamic>{
-          'versionCode': version.versionCode,
-          'versionName': version.versionName,
-        },
-      ),
-    );
+    await setRawVersion(<String, dynamic>{
+      'versionCode': version.versionCode,
+      'versionName': version.versionName,
+    });
+  }
+
+  Future<void> setRawVersion(Map<String, dynamic> version) async {
+    await patch(databaseUrl, body: jsonEncode(version));
   }
 }

@@ -3,6 +3,7 @@
 // on 10/05/2020
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart';
@@ -29,6 +30,13 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
   FlutterIncrementVersionCommand(Map<String, dynamic> config) : super(config) {
     argParser //
       ..addOption('env', abbr: 'e')
+      ..addOption('operation', abbr: 'o', allowed: ['patch', 'release'], defaultsTo: 'patch')
+      ..addOption(
+        'compute',
+        abbr: 'c',
+        help:
+            'You can specify a dart file that will compute the next version. You will receive the current saved values and you need to print the value to be used.',
+      )
       ..addOption('type', abbr: 't', help: 'The name used to save the version at.');
   }
 
@@ -56,10 +64,60 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       flutterGeneratedDir.dir.createSync(recursive: true);
     }
 
-    Version version = await execute(getVersion, 'Get current version from cloud');
-    version = await execute(version.increment, 'Increment Flutter version');
-    await execute(() => setVersion(version), 'Set version back to cloud: $version');
-    await runner.run(['flutter:version', 'read', ...argResults.arguments]);
+    if (argResults.wasParsed('compute')) {
+      Map<String, dynamic> data = await execute(getRawVersion, 'Get version from cloud');
+      data = await execute(
+        () async {
+          final CapturedOutput output = CapturedOutput();
+          await runCommand(
+            'dart',
+            <String>[
+              argResults['compute'],
+              jsonEncode(<String, dynamic>{
+                ...data,
+                'operation': argResults['operation'],
+              }),
+            ],
+            outputMode: OutputMode.capture,
+            output: output,
+            workingDirectory: pwd,
+          );
+
+          return jsonDecode(output.stdout);
+        },
+        'Computing version using user script',
+      );
+
+      if (data['versionCode'] == null) {
+        throw ArgumentError('You need to provide a versionCode.');
+      } else if (data['versionName'] == null) {
+        throw ArgumentError('You need to provide a versionName.');
+      }
+
+      await execute(() => setRawVersion(data), 'Set back to cloud: $data');
+    } else {
+      Version version = await execute(getVersion, 'Get current version from cloud');
+      if (argResults['operation'] == 'release') {
+        version = await execute(version.releaseVersion, 'Increment Flutter version');
+      } else {
+        version = await execute(version.patchVersion, 'Increment Flutter version');
+      }
+
+      await execute(() => setVersion(version), 'Set version back to cloud: $version');
+    }
+
+    await runner.run([
+      'flutter:version',
+      'read',
+      if (argResults.wasParsed('env')) ...<String>[
+        '--env',
+        argResults['env'],
+      ],
+      if (argResults.wasParsed('type')) ...<String>[
+        '--type',
+        argResults['type'],
+      ],
+    ]);
   }
 }
 
@@ -94,10 +152,18 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
       flutterGeneratedDir.dir.createSync(recursive: true);
     }
 
-    Version version = await getVersion();
+    final Map<String, dynamic> data = await getRawVersion();
     await execute(
-      () => runner.run(['flutter:version', 'set', '--version', version.toString(), ...argResults.arguments]),
-      'Setting version $version',
+      () => runner.run([
+        'flutter:version',
+        'set',
+        '--versionName',
+        data['versionName'] ?? '0.0.0',
+        '--versionCode',
+        '${data['versionCode']}' ?? '0',
+        ...argResults.arguments,
+      ]),
+      'Setting version $data',
     );
   }
 }
@@ -107,7 +173,12 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
     argParser //
       ..addOption('env', abbr: 'e')
       ..addFlag('update-cloud', help: 'Mirror the change in cloud also')
-      ..addOption('version', abbr: 'v')
+      ..addOption('version',
+          abbr: 'v',
+          help:
+              'Specifies a semantic version that would be used to determine the version name and version code. You can also specify the values using the versionName and version code options.')
+      ..addOption('versionName')
+      ..addOption('versionCode')
       ..addOption('type', abbr: 't', help: 'The name used to save the version at.');
   }
 
@@ -129,21 +200,21 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
     }
   }
 
-  void _updateYaml(Version version) {
+  void _updateYaml(String versionName, int versionCode) {
     final String pubspecFile = join(flutterDir, 'pubspec.yaml');
 
     String yaml = pubspecFile.readAsStringSync();
     if (!yaml.contains('versionCode')) {
-      yaml = yaml.replaceAllMapped(
-          RegExp('version: (.+)'), (_) => 'version: ${version.versionName}\nversionCode: ${version.versionCode}');
+      yaml =
+          yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: ${versionName}\nversionCode: ${versionCode}');
     } else {
-      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: ${version.versionName}');
-      yaml = yaml.replaceAllMapped(RegExp('versionCode: (.+)'), (_) => 'versionCode: ${version.versionCode}');
+      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: ${versionName}');
+      yaml = yaml.replaceAllMapped(RegExp('versionCode: (.+)'), (_) => 'versionCode: ${versionCode}');
     }
     pubspecFile.writeAsStringSync(yaml);
   }
 
-  void _updateIos(Version version) {
+  void _updateIos(String versionName, int versionCode) {
     final String configFile = join(iosDir, 'Flutter', 'Generated.xcconfig');
 
     if (!configFile.existsSync()) {
@@ -152,12 +223,12 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
     }
 
     String config = configFile.readAsStringSync();
-    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NUMBER', '${version.versionCode}');
-    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NAME', version.versionName);
+    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NUMBER', '$versionCode');
+    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NAME', versionName);
     configFile.writeAsStringSync(config);
   }
 
-  void _updateMacos(Version version) {
+  void _updateMacos(String versionName, int versionCode) {
     final String configFile = join(macosDir, 'Flutter', 'ephemeral', 'Flutter-Generated.xcconfig');
 
     if (!configFile.existsSync()) {
@@ -166,8 +237,8 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
     }
 
     String config = configFile.readAsStringSync();
-    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NUMBER', '${version.versionCode}');
-    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NAME', version.versionName);
+    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NUMBER', '$versionCode');
+    config = _updateXcconfigField(config, 'FLUTTER_BUILD_NAME', versionName);
     configFile.writeAsStringSync(config);
   }
 
@@ -185,7 +256,7 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
     return data;
   }
 
-  void _updateAndroid(Version version) {
+  void _updateAndroid(String versionName, int versionCode) {
     final String versionProperties = join(androidPropertiesDir, 'version.properties');
     if (!versionProperties.existsSync()) {
       stdout.writeln('$versionProperties does not exist.');
@@ -193,19 +264,19 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
     }
 
     versionProperties.writeAsStringSync(<String, Object>{
-      'versionCode': version.versionCode,
-      'versionName': version.versionName,
+      'versionCode': versionCode,
+      'versionName': versionName,
     }.asProperties);
   }
 
-  void _updateFlutter(Version version) {
+  void _updateFlutter(String versionName, int versionCode) {
     final StringBuffer buffer = StringBuffer()
       ..writeln('import \'package:pub_semver/pub_semver.dart\' as semver;')
       ..writeln()
       ..writeln('// ignore: avoid_classes_with_only_static_members')
       ..writeln('class Version {')
-      ..writeln('  static const String versionName = \'${version.versionName}\';')
-      ..writeln('  static const int versionCode = ${version.versionCode};')
+      ..writeln('  static const String versionName = \'${versionName}\';')
+      ..writeln('  static const int versionCode = ${versionCode};')
       ..writeln('  static final semver.Version version = semver.Version.parse(versionName);')
       ..writeln('}')
       ..writeln('');
@@ -219,16 +290,41 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
       flutterGeneratedDir.dir.createSync(recursive: true);
     }
 
-    Version version = Version.parse(argResults['version']);
-    version = Version.parse('$version${argResults.wasParsed('env') ? '+$env' : ''}');
-    await execute(() => _updateYaml(version), 'Update pubspec.yaml file');
-    await execute(() => _updateIos(version), 'Updating ios Generated.xcconfig');
-    await execute(() => _updateMacos(version), 'Updating macos Flutter-Generated.xcconfig');
-    await execute(() => _updateAndroid(version), 'Updating version.properties');
-    await execute(() => _updateFlutter(version), 'Updating version.dart');
+    String versionName;
+    int versionCode;
+
+    if (argResults.wasParsed('version')) {
+      Version version = Version.parse(argResults['version']);
+      version = Version.parse('$version${argResults.wasParsed('env') ? '+$env' : ''}');
+
+      versionName = version.versionName;
+      versionCode = version.versionCode;
+    } else {
+      versionName = argResults['versionName'];
+      versionCode = int.parse(argResults['versionCode']);
+
+      if (versionName == null || versionCode == null) {
+        throw ArgumentError(
+            'Make sure you pass both versionName and versionCode when not specifying a semantic version.');
+      }
+    }
+
+    await execute(() => _updateYaml(versionName, versionCode), 'Update pubspec.yaml file');
+    await execute(() => _updateIos(versionName, versionCode), 'Updating ios Generated.xcconfig');
+    await execute(() => _updateMacos(versionName, versionCode), 'Updating macos Flutter-Generated.xcconfig');
+    await execute(() => _updateAndroid(versionName, versionCode), 'Updating version.properties');
+    await execute(() => _updateFlutter(versionName, versionCode), 'Updating version.dart');
 
     if (argResults.wasParsed('update-cloud') && (argResults['update-cloud'] ?? false)) {
-      await execute(() => setVersion(version), 'Set the version back to cloud');
+      await execute(
+        () {
+          return setRawVersion(<String, dynamic>{
+            'versionName': versionName,
+            'versionCode': versionCode,
+          });
+        },
+        'Set the version back to cloud',
+      );
     }
   }
 }
