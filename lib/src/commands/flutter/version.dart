@@ -30,7 +30,7 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
   FlutterIncrementVersionCommand(Map<String, dynamic> config) : super(config) {
     argParser //
       ..addOption('env', abbr: 'e')
-      ..addOption('operation', abbr: 'o', allowed: ['patch', 'release'], defaultsTo: 'patch')
+      ..addOption('operation', abbr: 'o', allowed: <String>['patch', 'release'], defaultsTo: 'patch')
       ..addOption(
         'compute',
         abbr: 'c',
@@ -47,6 +47,7 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
   final String description =
       'Increment the cloud version of the Flutter app and update the flutter files to reflect that version.';
 
+  @override
   FlutterVersionCommand get parent => super.parent;
 
   @override
@@ -106,7 +107,7 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       await execute(() => setVersion(version), 'Set version back to cloud: $version');
     }
 
-    await runner.run([
+    await runner.run(<String>[
       'flutter:version',
       'read',
       if (argResults.wasParsed('env')) ...<String>[
@@ -135,6 +136,7 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
   final String description =
       'Read the cloud version of the Flutter app and update the flutter files to reflect that version.';
 
+  @override
   FlutterVersionCommand get parent => super.parent;
 
   @override
@@ -153,8 +155,8 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
     }
 
     final Map<String, dynamic> data = await getRawVersion();
-    await execute(
-      () => runner.run([
+    await execute<void>(
+      () => runner.run(<String>[
         'flutter:version',
         'set',
         '--versionName',
@@ -189,6 +191,7 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
   final String description =
       'Set a version regardless of the the cloud version for the Flutter app and update the flutter files to reflect that version.';
 
+  @override
   FlutterVersionCommand get parent => super.parent;
 
   @override
@@ -205,11 +208,10 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
 
     String yaml = pubspecFile.readAsStringSync();
     if (!yaml.contains('versionCode')) {
-      yaml =
-          yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: ${versionName}\nversionCode: ${versionCode}');
+      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: $versionName\nversionCode: $versionCode');
     } else {
-      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: ${versionName}');
-      yaml = yaml.replaceAllMapped(RegExp('versionCode: (.+)'), (_) => 'versionCode: ${versionCode}');
+      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: $versionName');
+      yaml = yaml.replaceAllMapped(RegExp('versionCode: (.+)'), (_) => 'versionCode: $versionCode');
     }
     pubspecFile.writeAsStringSync(yaml);
   }
@@ -275,8 +277,8 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
       ..writeln()
       ..writeln('// ignore: avoid_classes_with_only_static_members')
       ..writeln('class Version {')
-      ..writeln('  static const String versionName = \'${versionName}\';')
-      ..writeln('  static const int versionCode = ${versionCode};')
+      ..writeln('  static const String versionName = \'$versionName\';')
+      ..writeln('  static const int versionCode = $versionCode;')
       ..writeln('  static final semver.Version version = semver.Version.parse(versionName);')
       ..writeln('}')
       ..writeln('');

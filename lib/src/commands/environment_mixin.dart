@@ -35,7 +35,7 @@ mixin EnvironmentMixin on UpcodeCommand {
       for (MapEntry<String, dynamic> entry
           in flutterConfig.entries.where((MapEntry<String, dynamic> element) => element.value is! Map))
         entry.key: entry.value,
-      for (var value in flutterConfig.entries
+      for (MapEntry<String, dynamic> value in flutterConfig.entries
           .where((MapEntry<String, dynamic> element) => element.key == env && element.value is Map))
         ...value.value,
     };
@@ -54,7 +54,7 @@ mixin EnvironmentMixin on UpcodeCommand {
       for (MapEntry<String, dynamic> entry
           in apiConfig.entries.where((MapEntry<String, dynamic> element) => element.value is! Map))
         entry.key: entry.value,
-      for (var value
+      for (MapEntry<String, dynamic> value
           in apiConfig.entries.where((MapEntry<String, dynamic> element) => element.key == env && element.value is Map))
         ...value.value,
     };
@@ -98,9 +98,7 @@ mixin EnvironmentMixin on UpcodeCommand {
     return env == 'prod' ? '' : '${env.replaceAll('_', '-')}';
   }
 
-  String get apiVersionSuffix {
-    return this.apiVersion == null ? '' : this.apiVersion;
-  }
+  String get apiVersionSuffix => apiVersion ?? '';
 
   String get gatewayName {
     return <String>[
@@ -137,7 +135,7 @@ mixin EnvironmentMixin on UpcodeCommand {
     };
 
     final StringBuffer buffer = StringBuffer()..writeln('export const config = {');
-    for (var entry in config.entries) {
+    for (final MapEntry<String, dynamic> entry in config.entries) {
       buffer.writeln('  ${entry.key}: \'${entry.value}\',');
     }
     buffer //

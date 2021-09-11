@@ -19,18 +19,17 @@ class FlutterI18nCommand extends UpcodeCommand {
   @override
   FutureOr<dynamic> run() async {
     await execute(
-          () =>
-          runCommand(
-            'dart',
-            <String>[
-              join(toolsDir, 'flutter_l10n', 'bin', 'main.dart'),
-              '-s',
-              flutterResDir,
-              '-o',
-              join(flutterGeneratedDir, 'i18n'),
-            ],
-            workingDirectory: pwd,
-          ),
+      () => runCommand(
+        'dart',
+        <String>[
+          join(toolsDir, 'flutter_l10n', 'bin', 'main.dart'),
+          '-s',
+          flutterResDir,
+          '-o',
+          join(flutterGeneratedDir, 'i18n'),
+        ],
+        workingDirectory: pwd,
+      ),
       description,
     );
   }

@@ -1,6 +1,10 @@
 ## 0.6.0+1
 * throw is we are not able to read the version
 
+## 0.6.0+3
+* add analysis options
+* update dependencies
+
 ## 0.6.0
 * allow the user to specify a version incrementation algorithm
 

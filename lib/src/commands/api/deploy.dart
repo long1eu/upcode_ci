@@ -104,7 +104,7 @@ class GatewayDeployCommand extends UpcodeCommand with EnvironmentMixin {
           'run',
           'deploy',
           gatewayName,
-          if (env == 'prod') ...['--min-instances', '1'],
+          if (env == 'prod') ...<String>['--min-instances', '1'],
           '--image',
           'gcr.io/$projectId/endpoints-runtime-serverless:$gatewayHost',
           '--allow-unauthenticated',
@@ -174,7 +174,7 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
           'run',
           'deploy',
           apiName,
-          if (env == 'prod') ...['--min-instances', '1'],
+          if (env == 'prod') ...<String>['--min-instances', '1'],
           '--image',
           imageUrl,
           '--platform',
@@ -200,12 +200,11 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
 
 class AllDeployCommand extends UpcodeCommand with EnvironmentMixin {
   AllDeployCommand(Map<String, dynamic> config) : super(config) {
-    argParser
-      ..addOption(
-        'env',
-        abbr: 'e',
-        help: 'The name of the environment you want to deploy the gateway for.',
-      );
+    argParser.addOption(
+      'env',
+      abbr: 'e',
+      help: 'The name of the environment you want to deploy the gateway for.',
+    );
   }
 
   @override

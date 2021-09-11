@@ -21,13 +21,13 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
         'platform',
         abbr: 'p',
         help: 'The name of the platform you want to deploy to.',
-        allowed: ['android', 'ios'],
+        allowed: <String>['android', 'ios'],
       )
       ..addMultiOption(
         'groups',
         abbr: 'g',
         help: 'E comma separated list of group aliases to distribute to.',
-        defaultsTo: ['testers'],
+        defaultsTo: <String>['testers'],
       )
       ..addOption(
         'release-notes',
@@ -88,11 +88,11 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
           appId,
           '--groups',
           argResults['groups'].join(','),
-          if (argResults.wasParsed('release-notes')) ...[
+          if (argResults.wasParsed('release-notes')) ...<String>[
             '--release-notes-file',
             argResults['release-notes'],
           ],
-          if (argResults.wasParsed('token')) ...[
+          if (argResults.wasParsed('token')) ...<String>[
             '--token',
             argResults['token'],
           ]

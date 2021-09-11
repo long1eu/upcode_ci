@@ -16,6 +16,7 @@ class FlutterGenerateCommand extends UpcodeCommand {
   final String description =
       'Generate all dart files needed to run the Flutter app. This includes `buildrunner`, `i18n` and `protos`';
 
+  @override
   FutureOr<void> run() async {
     await runner.run(<String>['flutter:i18n']);
     await runner.run(<String>['flutter:buildrunner']);

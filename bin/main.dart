@@ -29,7 +29,7 @@ void main(List<String> args) {
     ...loadYaml(upcode.readAsStringSync()),
   };
 
-  CommandRunner('upcode', 'Provides useful automation tools')
+  CommandRunner<dynamic>('upcode', 'Provides useful automation tools')
     ..addCommand(FlutterGenerateCommand(config))
     ..addCommand(FlutterI18nCommand(config))
     ..addCommand(FlutterBuildRunnerCommand(config))

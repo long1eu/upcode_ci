@@ -25,6 +25,7 @@ class FlutterEnvironmentCommand extends UpcodeCommand {
 }
 
 mixin _FlutterEnvironmentCommandMixin on UpcodeCommand {
+  @override
   FlutterEnvironmentCommand get parent => super.parent;
 }
 
@@ -50,20 +51,20 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
     }
 
     final XmlDocument document = XmlDocument.parse(workspaceIdea.readAsStringSync());
-    final int projectNodeIndex = document.children.indexWhere((element) =>
+    final int projectNodeIndex = document.children.indexWhere((XmlNode element) =>
         element is XmlElement && //
         element.name.local == 'project' &&
         element.getAttribute('version') == '4');
     final XmlNode projectNode = document.children.removeAt(projectNodeIndex);
 
     final int runManagerIndex = projectNode.children
-        .indexWhere((element) => element is XmlElement && element.getAttribute('name') == 'RunManager');
+        .indexWhere((XmlNode element) => element is XmlElement && element.getAttribute('name') == 'RunManager');
 
     final XmlNode runManager =
         (runManagerIndex != -1 ? projectNode.children.removeAt(runManagerIndex) : _intelliJRunManager(env)).copy();
 
     runManager.setAttribute('selected', 'Flutter.$env');
-    if (!runManager.children.any((element) =>
+    if (!runManager.children.any((XmlNode element) =>
         element is XmlElement &&
         element.name.local == 'configuration' &&
         element.getAttribute('name') == env &&
@@ -94,12 +95,11 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
       ..writeln('  static const String androidApiKey = \'$androidKey\';')
       ..writeln('  static const String iosApiKey = \'$iosKey\';');
 
-
-    for (String key in this.flutterApiConfig.keys) {
+    for (final String key in flutterApiConfig.keys) {
       String variableName = camelize(key);
       final List<String> parts = variableName.split('');
-      variableName = [parts.first.toLowerCase(), ...parts.skip(1)].join('');
-      buffer.writeln('  static const String ${variableName} = \'${this.flutterApiConfig[key]}\';');
+      variableName = <String>[parts.first.toLowerCase(), ...parts.skip(1)].join('');
+      buffer.writeln('  static const String $variableName = \'${flutterApiConfig[key]}\';');
     }
     buffer //
       ..writeln('}')
@@ -128,7 +128,7 @@ XmlElement _intelliJRunManager(String environment) {
 
 XmlElement _intelliJConfiguration(String environment, String main) {
   final StringBuffer buffer = StringBuffer()
-    ..writeln('  <configuration name="${environment}" type="FlutterRunConfigurationType" factoryName="Flutter">')
+    ..writeln('  <configuration name="$environment" type="FlutterRunConfigurationType" factoryName="Flutter">')
     ..writeln('    <option name="buildFlavor" value="$environment" />')
     ..writeln('    <option name="filePath" value="\$PROJECT_DIR\$/$main" />')
     ..writeln('    <method v="2" />')

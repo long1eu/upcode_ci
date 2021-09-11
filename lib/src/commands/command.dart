@@ -254,10 +254,9 @@ extension FileString on String {
   List<String> readAsLinesSync() => File(this).readAsLinesSync();
 
   Map<String, String> readPropertiesFile() {
-    return Map<String, String>.fromEntries(this
-        .readAsLinesSync() //
-        .map((e) => e.split('='))
-        .map((e) => MapEntry(e[0], e[1])));
+    return Map<String, String>.fromEntries(readAsLinesSync() //
+        .map((String e) => e.split('='))
+        .map((List<String> e) => MapEntry<String, String>(e[0], e[1])));
   }
 
   void writeAsStringSync(String content) => File(this).writeAsStringSync(content);
@@ -276,14 +275,14 @@ extension FileString on String {
 }
 
 extension UpdateVersion on Version {
-  int get versionCode => this.patch + this.minor * 1000 + this.major * 100000;
+  int get versionCode => patch + minor * 1000 + major * 100000;
 
-  String get versionName => this.toString();
+  String get versionName => toString();
 
   Version patchVersion() {
-    if (this.minor >= 99) {
+    if (minor >= 99) {
       return nextMajor;
-    } else if (this.patch >= 999) {
+    } else if (patch >= 999) {
       return nextMinor;
     } else {
       return nextPatch;
@@ -298,7 +297,7 @@ extension UpdateVersion on Version {
 extension GradleProperties on Map<String, dynamic> {
   String get asProperties {
     final StringBuffer buffer = StringBuffer();
-    for (var entry in entries) {
+    for (final MapEntry<String, dynamic> entry in entries) {
       buffer
         ..write(entry.key)
         ..write('=')

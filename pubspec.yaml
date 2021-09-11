@@ -1,6 +1,6 @@
 name: upcode_ci
 description: A starting point for Dart libraries or applications.
-version: 0.6.0+1
+version: 0.6.0+3
 repository: https://github.com/long1eu/upcode_ci
 executables:
   upcode:
@@ -12,18 +12,18 @@ dependencies:
   path: ^1.8.0
   pub_semver: ^2.0.0
   geodesy: ^0.3.2
-  googleapis: ^2.0.0
-  googleapis_beta: ^2.0.0
+  googleapis: ^5.0.0
+  googleapis_beta: ^5.0.0
   googleapis_auth: ^1.1.0
   uuid: ^3.0.4
   intl: ^0.17.0
-  strings: ^0.2.1
-  args: ^2.0.0
+  strings: ^0.2.2
+  args: ^2.2.0
   xml: ^5.1.0
-  http: ^0.13.1
-  http_multi_server: ^3.0.0
-  xml2json: ^5.0.0
+  http: ^0.13.3
+  http_multi_server: ^3.0.1
+  xml2json: ^5.3.1
   yaml: ^3.1.0
 
 dev_dependencies:
-  pedantic: ^1.11.0
+  pedantic: ^1.11.1

@@ -21,7 +21,7 @@ class FlutterFastlaneDeployCommand extends UpcodeCommand with EnvironmentMixin, 
         'platform',
         abbr: 'p',
         help: 'The name of the platform you want to deploy to.',
-        allowed: ['android', 'ios'],
+        allowed: <String>['android', 'ios'],
       );
   }
 

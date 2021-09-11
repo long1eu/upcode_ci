@@ -54,7 +54,7 @@ class FlutterTestCommand extends UpcodeCommand {
         await execute(
           () => runCommand(
             'pub',
-            <String>['run', generatedCoverage ? 'test_coverage' : 'test'],
+            <String>['run', if (generatedCoverage) 'test_coverage' else 'test'],
             workingDirectory: module,
           ),
           'Runs the all the test in the $module module.',

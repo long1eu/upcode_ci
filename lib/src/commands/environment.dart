@@ -55,7 +55,7 @@ class CreateEnvironmentCommand extends UpcodeCommand with EnvironmentMixin {
   Future<void> _deployInitialGateway() async {
     final String envSuffix = env == 'prod' ? '' : '-${env.replaceAll('_', '-')}';
     final String apiVersion = apiApiConfig['api_version'] == null ? '' : '-${apiApiConfig['api_version']}';
-    final String gatewayName = '${gatewayBaseName}${apiVersion}${envSuffix}';
+    final String gatewayName = '$gatewayBaseName$apiVersion$envSuffix';
 
     await runCommand(
       'gcloud',
@@ -84,7 +84,7 @@ class CreateEnvironmentCommand extends UpcodeCommand with EnvironmentMixin {
   FutureOr<dynamic> run() async {
     await execute(_deployInitialGateway, 'Deploy the initial gateway');
     stdout.writeln('Add the "cloud_run_hash" to your upcode.yaml file under the "api" root and press Enter/Return.');
-    await stdin.readLineSync();
+    stdin.readLineSync();
     await runner.run(<String>['api:deploy', 'all', '--env', rawEnv]);
   }
 }

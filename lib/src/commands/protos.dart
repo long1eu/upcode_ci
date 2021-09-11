@@ -24,7 +24,7 @@ class ProtosCommand extends UpcodeCommand {
   final String description = 'Generate implementation files in dart and js, and the API descriptor from proto files.';
 
   void _deleteCurrent(List<String> dirs) {
-    for (String dir in dirs) {
+    for (final String dir in dirs) {
       final Directory outDir = Directory(dir);
       if (outDir.existsSync()) {
         outDir.deleteSync(recursive: true);
@@ -37,8 +37,8 @@ class ProtosCommand extends UpcodeCommand {
   List<String> get _protoFiles => Directory(protoSrcDir)
       .listSync(recursive: true)
       .whereType<File>()
-      .where((element) => element.path.endsWith('.proto'))
-      .map((element) => element.path)
+      .where((File element) => element.path.endsWith('.proto'))
+      .map((File element) => element.path)
       .toList();
 
   @override
@@ -66,16 +66,16 @@ class ProtosCommand extends UpcodeCommand {
       return;
     }
 
-    final List<String> dirsToDelete = [if (buildDart) dartProtoDir, if (buildJs) protoApiOutDir];
+    final List<String> dirsToDelete = <String>[if (buildDart) dartProtoDir, if (buildJs) protoApiOutDir];
     if (dirsToDelete.isNotEmpty) {
       execute(() => _deleteCurrent(dirsToDelete), 'Delete existing proto implementation');
     }
 
     if (!protoApiOutDir.existsSync()) {
-      await Directory(protoApiOutDir).createSync(recursive: true);
+      Directory(protoApiOutDir).createSync(recursive: true);
     }
     if (!dartProtoDir.existsSync()) {
-      await Directory(dartProtoDir).createSync(recursive: true);
+      Directory(dartProtoDir).createSync(recursive: true);
     }
 
     final String toolsExtension = Platform.isWindows ? '.cmd' : '';
@@ -104,7 +104,7 @@ class ProtosCommand extends UpcodeCommand {
           workingDirectory: Directory.current.path,
         );
       },
-      'Proto building: ${[
+      'Proto building: ${<String>[
         if (buildJs) 'js implementation',
         if (buildDart) 'dart implementation',
         if (descriptor) 'api descriptor',

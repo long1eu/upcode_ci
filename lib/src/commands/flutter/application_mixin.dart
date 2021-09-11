@@ -15,7 +15,7 @@ mixin ApplicationMixin on EnvironmentMixin {
     final List<Map<String, dynamic>> clients = List<Map<String, dynamic>>.from(data['client']);
 
     final Map<String, dynamic> clientData = clients.firstWhere(
-        (element) => element['client_info']['android_client_info']['package_name'] == androidAppId,
+        (Map<String, dynamic> element) => element['client_info']['android_client_info']['package_name'] == androidAppId,
         orElse: () => null);
 
     if (clientData == null) {
@@ -35,7 +35,8 @@ mixin ApplicationMixin on EnvironmentMixin {
       ..parse(join(iosDir, 'Runner', 'GoogleService-Info.plist').readAsStringSync());
 
     final Map<String, dynamic> dict = jsonDecode(transformer.toGData())['plist']['dict'];
-    final int index = List<Map<String, dynamic>>.from(dict['key']).indexWhere((json) => json['\$t'] == 'API_KEY');
+    final int index = List<Map<String, dynamic>>.from(dict['key'])
+        .indexWhere((Map<String, dynamic> json) => json['\$t'] == 'API_KEY');
     final String apiKey = dict['string'][index]['\$t'];
 
     if (!RegExp('AIza[0-9A-Za-z-_]{35}').hasMatch(apiKey)) {
@@ -47,7 +48,7 @@ mixin ApplicationMixin on EnvironmentMixin {
 
   Future<AndroidApp> getAndroidApp() async {
     final ListAndroidAppsResponse data = await androidAppsApi.list(firebaseProjectName);
-    final AndroidApp app = data.apps.firstWhere((element) {
+    final AndroidApp app = data.apps.firstWhere((AndroidApp element) {
       print('object: ${element.packageName}');
       return element.packageName == androidAppId;
     }, orElse: () => null);
@@ -60,7 +61,7 @@ mixin ApplicationMixin on EnvironmentMixin {
 
   Future<IosApp> getIosApp() async {
     final ListIosAppsResponse data = await iosAppsApi.list(firebaseProjectName);
-    final IosApp app = data.apps.firstWhere((element) => element.bundleId == iosAppId, orElse: () => null);
+    final IosApp app = data.apps.firstWhere((IosApp element) => element.bundleId == iosAppId, orElse: () => null);
     if (app == null) {
       throw ArgumentError(
           'This environment has not been created yet. You need to first call: \nflutter:environment create --env $rawEnv');

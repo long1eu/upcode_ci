@@ -39,7 +39,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   String get versionType => argResults['type'];
 
   void _updateYamlField(List<String> lines, String field, String value) {
-    int index = lines.indexWhere((element) => element.startsWith('$field:'));
+    int index = lines.indexWhere((String element) => element.startsWith('$field:'));
     if (index == -1) {
       index = 2;
       lines.insert(2, '$field: ');
@@ -57,7 +57,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   Future<void> _updateApiConfiguration() async {
     final List<String> lines = apiConfigFile.readAsLinesSync();
     _updateYamlField(lines, 'name', gatewayHost);
-    _updateYamlField(lines, 'title', '$apiBaseDisplayName gRPC API ${apiVersion}${env == 'prod' ? '' : ' $env'}');
+    _updateYamlField(lines, 'title', '$apiBaseDisplayName gRPC API $apiVersion${env == 'prod' ? '' : ' $env'}');
     _updateYamlField(lines, '      address', 'grpcs://$apiHost');
 
     apiConfigFile.writeAsStringSync(lines.join('\n'));
