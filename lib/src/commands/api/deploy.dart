@@ -131,7 +131,9 @@ class GatewayDeployCommand extends UpcodeCommand with EnvironmentMixin {
 
 class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
   ServiceDeployCommand(Map<String, dynamic> config) : super(config) {
-    argParser.addOption('env', abbr: 'e', help: 'The name of the environment you want to deploy the gateway for.');
+    argParser
+      ..addOption('env', abbr: 'e', help: 'The name of the environment you want to deploy the gateway for.')
+      ..addOption('image', abbr: 'i', help: 'The name of the image you want to deploy as defined in upcode.yaml.');
   }
 
   @override
@@ -140,14 +142,10 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
   @override
   final String description = 'Builds and deploys the service image. This assumes you already set the environment.';
 
-  @override
-  FutureOr<dynamic> run() async {
-    await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
-    await runner.run(<String>['api:version', 'read']);
-    await execute(
-      () => runCommand('npm', <String>['run', 'build'], workingDirectory: apiDir),
-      'Build service sources',
-    );
+  Future<void> _deployImage(String apiName, List<String> cloudSqlInstances) async {
+    if (apiName == null) {
+      throw StateError('Unknown image');
+    }
 
     final String imageUrl = 'gcr.io/$projectId/$apiName';
 
@@ -189,6 +187,10 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
           '60',
           '--project',
           projectId,
+          if (cloudSqlInstances.isNotEmpty) ...<String>[
+            '--set-cloudsql-instances',
+            cloudSqlInstances.join(','),
+          ],
           '-q'
         ],
         workingDirectory: apiDir,
@@ -196,15 +198,36 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
       'Deploy service',
     );
   }
+
+  @override
+  FutureOr<dynamic> run() async {
+    await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
+    await runner.run(<String>['api:version', 'read']);
+    await execute(
+      () => runCommand('npm', <String>['run', 'build'], workingDirectory: apiDir),
+      'Build service sources',
+    );
+
+    if (argResults.wasParsed('image')) {
+      final String name = argResults['image'];
+
+      final int index = images.indexWhere((ApiImage image) => image.name == name);
+      await _deployImage(apiNames[index], images[index].cloudSqlInstances);
+    } else {
+      for (final String apiName in apiNames) {
+        await _deployImage(apiName, cloudSqlInstances);
+      }
+    }
+  }
 }
 
 class AllDeployCommand extends UpcodeCommand with EnvironmentMixin {
   AllDeployCommand(Map<String, dynamic> config) : super(config) {
-    argParser.addOption(
-      'env',
-      abbr: 'e',
-      help: 'The name of the environment you want to deploy the gateway for.',
-    );
+    argParser
+      ..addOption('env', abbr: 'e', help: 'The name of the environment you want to deploy the gateway for.')
+      ..addOption('image', abbr: 'i', help: 'The name of the image you want to deploy as defined in upcode.yaml.')
+      ..addFlag('deploy-service',
+          defaultsTo: true, help: 'Whether you want ot deploy the service or just the api and gateway.');
   }
 
   @override
@@ -223,6 +246,15 @@ class AllDeployCommand extends UpcodeCommand with EnvironmentMixin {
     await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
     final String configurationId = await runner.run(<String>['api:deploy', 'endpoints']);
     await runner.run(<String>['api:deploy', 'gateway', '--env', rawEnv, '--configuration_id', configurationId]);
-    await runner.run(<String>['api:deploy', 'service', '--env', rawEnv]);
+    await runner.run(<String>[
+      'api:deploy',
+      'service',
+      '--env',
+      rawEnv,
+      if (argResults.wasParsed('image')) ...<String>[
+        '--image',
+        argResults['image'],
+      ],
+    ]);
   }
 }

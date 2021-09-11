@@ -1,3 +1,19 @@
+## 0.6.1
+* allow the ability to add multiple images for the api
+* allow specifying a list of Cloud SQL instances that you want to link to all images or to just one. If the `cloudsql_instances` is use at the image level the top level values will be ignored
+```yaml
+api:
+  cloudsql_instances:
+    - project:region:name
+  images:
+    - name:
+      selector: "*"
+    - name: name
+      selector: domain.v1.Service.*
+      cloudsql_instances:
+        - project:region:name01
+```
+
 ## 0.6.0+1
 * throw is we are not able to read the version
 

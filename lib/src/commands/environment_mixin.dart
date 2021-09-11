@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:upcode_ci/src/commands/command.dart';
+import 'package:yaml/yaml.dart';
 
 mixin EnvironmentMixin on UpcodeCommand {
   @override
@@ -81,7 +82,13 @@ mixin EnvironmentMixin on UpcodeCommand {
 
   String get apiVersion => apiApiConfig['api_version'];
 
-  String get apiBaseName => apiApiConfig['api_base_name'];
+  String get apiBaseName {
+    if (apiApiConfig['api_base_name'] == null) {
+      throw StateError('You need to provide a value for "api_base_name" in your upcode.yaml file.');
+    }
+
+    return apiApiConfig['api_base_name'];
+  }
 
   String get gatewayBaseName => apiApiConfig['gateway_base_name'];
 
@@ -116,12 +123,47 @@ mixin EnvironmentMixin on UpcodeCommand {
     ].join('-');
   }
 
-  String get apiHost {
-    return '$apiName-$cloudRunHash.a.run.app';
+  List<String> get apiNames {
+    return images.map((ApiImage image) => '$apiName${image.name.isEmpty ? '' : '-${image.name}'}').toList();
+  }
+
+  List<String> get cloudSqlInstances {
+    final YamlList instances = apiConfig['cloudsql_instances'];
+
+    if (instances == null) {
+      return <String>[];
+    }
+
+    return instances.map((dynamic name) => '$name').toList();
+  }
+
+  List<String> get apiHosts {
+    return apiNames.map((String name) => '$name-$cloudRunHash.a.run.app').toList();
   }
 
   String get gatewayHost {
     return '$gatewayName-$cloudRunHash.a.run.app';
+  }
+
+  List<ApiImage> get images {
+    final List<Map<dynamic, dynamic>> images =
+        List<Map<dynamic, dynamic>>.from(apiConfig['images'] ?? <Map<String, dynamic>>[]);
+
+    if (images.isEmpty) {
+      images.add(<String, dynamic>{'selector': '*', 'name': ''});
+    }
+
+    return images.map((Map<dynamic, dynamic> image) {
+      return ApiImage(
+        name: image['name'] ?? '',
+        selector: image['selector'] ?? '*',
+        cloudSqlInstances: image['cloudsql_instances'] //
+                ?.map((dynamic name) => '$name')
+                ?.cast<String>()
+                ?.toList() ??
+            cloudSqlInstances,
+      );
+    }).toList();
   }
 
   String getApiConfigFile(Version version) {
@@ -144,4 +186,12 @@ mixin EnvironmentMixin on UpcodeCommand {
 
     return buffer.toString();
   }
+}
+
+class ApiImage {
+  ApiImage({/*@required*/ this.name, /*@required*/ this.selector, /*@required*/ this.cloudSqlInstances});
+
+  final String name;
+  final String selector;
+  final List<String> cloudSqlInstances;
 }

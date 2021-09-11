@@ -58,9 +58,26 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
     final List<String> lines = apiConfigFile.readAsLinesSync();
     _updateYamlField(lines, 'name', gatewayHost);
     _updateYamlField(lines, 'title', '$apiBaseDisplayName gRPC API $apiVersion${env == 'prod' ? '' : ' $env'}');
-    _updateYamlField(lines, '      address', 'grpcs://$apiHost');
 
-    apiConfigFile.writeAsStringSync(lines.join('\n'));
+    final List<String> backend = <String>[
+      'backend:',
+      '  rules:',
+      ...List<List<String>>.generate(
+        images.length,
+        (int index) {
+          final ApiImage image = images[index];
+          final String host = apiHosts[index];
+
+          return <String>[
+            '    - selector: "${image.selector}"',
+            '      address: grpcs://$host',
+          ];
+        },
+      ).expand((List<String> image) => image),
+    ];
+
+    final int index = lines.lastIndexWhere((String line) => line.startsWith('backend:'));
+    apiConfigFile.writeAsStringSync(<String>[...lines.sublist(0, index), ...backend].join('\n'));
   }
 
   @override
