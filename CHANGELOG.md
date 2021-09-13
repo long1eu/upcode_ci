@@ -1,3 +1,6 @@
+## 0.6.3
+* respect the deployService flag when deploying all on api
+
 ## 0.6.2
 * allow setting min instances for cloud run
 

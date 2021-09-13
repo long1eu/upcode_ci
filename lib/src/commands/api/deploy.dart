@@ -247,15 +247,19 @@ class AllDeployCommand extends UpcodeCommand with EnvironmentMixin {
     await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
     final String configurationId = await runner.run(<String>['api:deploy', 'endpoints']);
     await runner.run(<String>['api:deploy', 'gateway', '--env', rawEnv, '--configuration_id', configurationId]);
-    await runner.run(<String>[
-      'api:deploy',
-      'service',
-      '--env',
-      rawEnv,
-      if (argResults.wasParsed('image')) ...<String>[
-        '--image',
-        argResults['image'],
-      ],
-    ]);
+    final bool deployService = argResults['deploy-service'];
+
+    if (deployService) {
+      await runner.run(<String>[
+        'api:deploy',
+        'service',
+        '--env',
+        rawEnv,
+        if (argResults.wasParsed('image')) ...<String>[
+          '--image',
+          argResults['image'],
+        ],
+      ]);
+    }
   }
 }
