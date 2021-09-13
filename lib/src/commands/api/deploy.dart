@@ -142,7 +142,7 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
   @override
   final String description = 'Builds and deploys the service image. This assumes you already set the environment.';
 
-  Future<void> _deployImage(String apiName, List<String> cloudSqlInstances) async {
+  Future<void> _deployImage(String apiName, List<String> cloudSqlInstances, int minInstances) async {
     if (apiName == null) {
       throw StateError('Unknown image');
     }
@@ -172,7 +172,7 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
           'run',
           'deploy',
           apiName,
-          if (env == 'prod') ...<String>['--min-instances', '1'],
+          if (minInstances > 0) ...<String>['--min-instances', '$minInstances'],
           '--image',
           imageUrl,
           '--platform',
@@ -208,14 +208,15 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
       'Build service sources',
     );
 
+    final int minInstances = int.parse('${apiConfig['min_instances'] ?? 0}');
     if (argResults.wasParsed('image')) {
       final String name = argResults['image'];
 
       final int index = images.indexWhere((ApiImage image) => image.name == name);
-      await _deployImage(apiNames[index], images[index].cloudSqlInstances);
+      await _deployImage(apiNames[index], images[index].cloudSqlInstances, minInstances);
     } else {
       for (final String apiName in apiNames) {
-        await _deployImage(apiName, cloudSqlInstances);
+        await _deployImage(apiName, cloudSqlInstances, minInstances);
       }
     }
   }

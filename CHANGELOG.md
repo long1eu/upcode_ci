@@ -1,3 +1,6 @@
+## 0.6.2
+* allow setting min instances for cloud run
+
 ## 0.6.1
 * allow the ability to add multiple images for the api
 * allow specifying a list of Cloud SQL instances that you want to link to all images or to just one. If the `cloudsql_instances` is use at the image level the top level values will be ignored
