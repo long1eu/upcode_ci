@@ -1,3 +1,6 @@
+## 0.6.4
+* allow the use of environment without firebase
+
 ## 0.6.3
 * respect the deployService flag when deploying all on api
 

@@ -79,9 +79,6 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
   }
 
   Future<void> _saveFlutterConfiguration() async {
-    final String androidKey = await execute(androidApiKey, 'Reading Android API key');
-    final String iosKey = await execute(iosApiKey, 'Reading iOS API key');
-
     stdout.writeln('Saving Flutter configuration');
     final StringBuffer buffer = StringBuffer() //
       ..writeln('// ignore: avoid_classes_with_only_static_members')
@@ -91,9 +88,14 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
       buffer.writeln('  static const String environment = \'$env\';');
     }
 
-    buffer //
-      ..writeln('  static const String androidApiKey = \'$androidKey\';')
-      ..writeln('  static const String iosApiKey = \'$iosKey\';');
+    if (projectId != null) {
+      final String androidKey = await execute(androidApiKey, 'Reading Android API key');
+      final String iosKey = await execute(iosApiKey, 'Reading iOS API key');
+
+      buffer //
+        ..writeln('  static const String androidApiKey = \'$androidKey\';')
+        ..writeln('  static const String iosApiKey = \'$iosKey\';');
+    }
 
     for (final String key in flutterApiConfig.keys) {
       String variableName = camelize(key);
@@ -110,9 +112,13 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
 
   @override
   FutureOr<dynamic> run() async {
-    await initFirebase();
-    await execute(saveAndroidConfig, 'Saving Firebase configuration for Android');
-    await execute(saveIosConfig, 'Saving Firebase configuration for iOS');
+    print('projectId: $projectId');
+    if (projectId != null) {
+      await initFirebase();
+      await execute(saveAndroidConfig, 'Saving Firebase configuration for Android');
+      await execute(saveIosConfig, 'Saving Firebase configuration for iOS');
+    }
+
     if (argResults.wasParsed('env')) {
       await execute(_setIdeaEnv, 'Updating IntelliJ Idea run configuration.');
     }
