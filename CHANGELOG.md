@@ -1,3 +1,6 @@
+## 0.6.6
+* update proto js definition from grpc to grpc-js
+
 ## 0.6.5
 * skip version in api deploy if we can't read it
 

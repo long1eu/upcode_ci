@@ -87,8 +87,8 @@ class ProtosCommand extends UpcodeCommand {
           <String>[
             if (buildJs) ...<String>[
               '--js_out=import_style=commonjs,binary:$protoApiOutDir',
-              '--ts_out=$protoApiOutDir',
-              '--grpc_out=$protoApiOutDir',
+              '--ts_out=generate_package_definition:$protoApiOutDir',
+              '--grpc_out=generate_package_definition,grpc_js:$protoApiOutDir',
               '--plugin=protoc-gen-grpc=${join(apiDir, 'node_modules', '.bin', 'grpc_tools_node_protoc_plugin$toolsExtension')}',
               '--plugin=protoc-gen-ts=${join(apiDir, 'node_modules', '.bin', 'protoc-gen-ts$toolsExtension')}',
             ],
