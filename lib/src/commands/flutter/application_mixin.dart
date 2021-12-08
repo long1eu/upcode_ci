@@ -3,9 +3,9 @@ import 'dart:convert';
 
 import 'package:googleapis_beta/firebase/v1beta1.dart';
 import 'package:path/path.dart';
-import 'package:xml2json/xml2json.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
+import 'package:xml2json/xml2json.dart';
 
 mixin ApplicationMixin on EnvironmentMixin {
   String androidApiKey() {
@@ -49,7 +49,6 @@ mixin ApplicationMixin on EnvironmentMixin {
   Future<AndroidApp> getAndroidApp() async {
     final ListAndroidAppsResponse data = await androidAppsApi.list(firebaseProjectName);
     final AndroidApp app = data.apps.firstWhere((AndroidApp element) {
-      print('object: ${element.packageName}');
       return element.packageName == androidAppId;
     }, orElse: () => null);
     if (app == null) {

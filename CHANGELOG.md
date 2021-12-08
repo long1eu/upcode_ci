@@ -1,3 +1,6 @@
+## 0.6.5
+* skip version in api deploy if we can't read it
+
 ## 0.6.4
 * allow the use of environment without firebase
 

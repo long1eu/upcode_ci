@@ -173,7 +173,7 @@ mixin EnvironmentMixin on UpcodeCommand {
       'key': key,
       'projectId': projectId,
       'projectLocation': projectLocation,
-      'version': '$version',
+      if (version != null) 'version': '$version',
     };
 
     final StringBuffer buffer = StringBuffer()..writeln('export const config = {');

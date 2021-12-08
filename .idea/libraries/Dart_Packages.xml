@@ -33,8 +33,8 @@
         <entry key="args">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/args-2.2.0/lib" />
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/args-1.6.0/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/args-2.2.0/lib" />
             </list>
           </value>
         </entry>
@@ -167,8 +167,8 @@
         <entry key="http_multi_server">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/http_multi_server-3.0.1/lib" />
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/http_multi_server-3.0.0/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/http_multi_server-3.0.1/lib" />
             </list>
           </value>
         </entry>
@@ -217,8 +217,8 @@
         <entry key="logging">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/logging-0.11.4/lib" />
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/logging-1.0.0/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/logging-0.11.4/lib" />
             </list>
           </value>
         </entry>
@@ -267,8 +267,8 @@
         <entry key="pedantic">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/pedantic-1.11.1/lib" />
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/pedantic-1.11.0/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/pedantic-1.11.1/lib" />
             </list>
           </value>
         </entry>

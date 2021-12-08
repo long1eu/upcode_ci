@@ -72,10 +72,14 @@ class ApiReadVersionCommand extends UpcodeCommand with VersionMixin {
   String get versionType => argResults['type'];
 
   Future<void> _updateConfig() async {
-    final Version version = await getVersion();
-    final String data = join(apiDir, 'src', 'config.ts')
-        .readAsStringSync()
-        .replaceFirstMapped(RegExp('  version: "(.+?)"'), (_) => '$version');
+    Version version;
+    try {
+      version = await getVersion();
+    } catch (_) {}
+    String data = join(apiDir, 'src', 'config.ts').readAsStringSync();
+    if (version != null) {
+      data = data.replaceFirstMapped(RegExp('  version: "(.+?)"'), (_) => '$version');
+    }
     join(apiDir, 'src', 'config.ts').writeAsStringSync(data);
   }
 

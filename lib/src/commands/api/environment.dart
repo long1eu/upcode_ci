@@ -49,7 +49,10 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   }
 
   Future<void> _updateConfig() async {
-    final Version version = await getVersion();
+    Version version;
+    try {
+      version = await getVersion();
+    } catch (_) {}
     final String data = getApiConfigFile(version);
     join(apiDir, 'src', 'config.ts').writeAsStringSync(data);
   }
