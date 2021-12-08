@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:path/path.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 
 class ProtosCommand extends UpcodeCommand {
@@ -78,7 +77,12 @@ class ProtosCommand extends UpcodeCommand {
       Directory(dartProtoDir).createSync(recursive: true);
     }
 
-    final String toolsExtension = Platform.isWindows ? '.cmd' : '';
+    String jsPluginPath;
+    if (buildJs) {
+      final ProcessResult result =
+          Process.runSync(Platform.isWindows ? 'where' : 'which', <String>['grpc_tools_node_protoc_plugin']);
+      jsPluginPath = '${result.stdout}'.split('\n').first;
+    }
 
     await execute(
       () {
@@ -89,8 +93,7 @@ class ProtosCommand extends UpcodeCommand {
               '--js_out=import_style=commonjs,binary:$protoApiOutDir',
               '--ts_out=generate_package_definition:$protoApiOutDir',
               '--grpc_out=generate_package_definition,grpc_js:$protoApiOutDir',
-              '--plugin=protoc-gen-grpc=${join(apiDir, 'node_modules', '.bin', 'grpc_tools_node_protoc_plugin$toolsExtension')}',
-              '--plugin=protoc-gen-ts=${join(apiDir, 'node_modules', '.bin', 'protoc-gen-ts$toolsExtension')}',
+              '--plugin=protoc-gen-grpc=$jsPluginPath',
             ],
             if (buildDart) '--dart_out=grpc:$dartProtoDir',
             if (descriptor) ...<String>[

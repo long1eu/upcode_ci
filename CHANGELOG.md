@@ -1,3 +1,6 @@
+## 0.7.0
+* Breaking Change: require `grpc_tools_node_protoc_plugin` and `grpc-tools` be globally installed using `npm install -g`
+
 ## 0.6.6
 * update proto js definition from grpc to grpc-js
 
