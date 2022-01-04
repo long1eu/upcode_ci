@@ -1,3 +1,7 @@
+## 0.8.1
+
+Fix google proto files not being included in generation
+
 ## 0.8.0
 
 Add null-safety, let me know if you have any errors, and I'll make sure to fix them ass soon as possible

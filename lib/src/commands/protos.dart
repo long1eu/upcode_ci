@@ -37,7 +37,7 @@ class ProtosCommand extends UpcodeCommand {
   List<String> get _protoFiles => Directory(protoSrcDir)
       .listSync(recursive: true)
       .whereType<File>()
-      .where((File element) => element.path.endsWith('.proto') && !element.path.contains('google'))
+      .where((File element) => element.path.endsWith('.proto'))
       .map((File element) => element.path)
       .toList();
 
