@@ -35,10 +35,10 @@ class ApiIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       'Increment the cloud version of the api app and update the config files to reflect that version.';
 
   @override
-  ApiVersionCommand get parent => super.parent;
+  ApiVersionCommand get parent => super.parent! as ApiVersionCommand;
 
   @override
-  String get versionType => argResults['type'];
+  String get versionType => argResults!['type'];
 
   @override
   FutureOr<void> run() async {
@@ -49,7 +49,7 @@ class ApiIncrementVersionCommand extends UpcodeCommand with VersionMixin {
     Version version = await execute(getVersion, 'Get current version from cloud');
     version = await execute(version.patchVersion, 'Increment api version');
     await execute(() => setVersion(version), 'Set version back to cloud: $version');
-    await runner.run(<String>['api:version', 'read']);
+    await runner!.run(<String>['api:version', 'read']);
   }
 }
 
@@ -66,13 +66,13 @@ class ApiReadVersionCommand extends UpcodeCommand with VersionMixin {
       'Read the cloud version of the api app and update the config files to reflect that version.';
 
   @override
-  ApiVersionCommand get parent => super.parent;
+  ApiVersionCommand get parent => super.parent! as ApiVersionCommand;
 
   @override
-  String get versionType => argResults['type'];
+  String get versionType => argResults!['type'];
 
   Future<void> _updateConfig() async {
-    Version version;
+    Version? version;
     try {
       version = await getVersion();
     } catch (_) {}

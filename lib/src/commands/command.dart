@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:args/src/arg_results.dart';
 import 'package:googleapis/androidpublisher/v3.dart';
 import 'package:googleapis/firestore/v1.dart';
 import 'package:googleapis_auth/auth_io.dart';
@@ -15,7 +16,7 @@ import 'package:path/path.dart' as path;
 import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-AutoRefreshingAuthClient googleClient;
+AutoRefreshingAuthClient? googleClient;
 
 abstract class UpcodeCommand extends Command<dynamic> {
   UpcodeCommand(this.baseConfig) {
@@ -31,8 +32,11 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   void init() {}
 
+  Map<String, dynamic> get config => _config;
+
   Map<String, dynamic> get _config {
     init();
+    final ArgResults argResults = this.argResults!;
     return <String, dynamic>{
       ...baseConfig,
       // override
@@ -128,27 +132,27 @@ abstract class UpcodeCommand extends Command<dynamic> {
   }
 
   ProjectsAndroidAppsResource get androidAppsApi {
-    return FirebaseManagementApi(googleClient).projects.androidApps;
+    return FirebaseManagementApi(googleClient!).projects.androidApps;
   }
 
   ProjectsIosAppsResource get iosAppsApi {
-    return FirebaseManagementApi(googleClient).projects.iosApps;
+    return FirebaseManagementApi(googleClient!).projects.iosApps;
   }
 
   OperationsResource get operationsApi {
-    return FirebaseManagementApi(googleClient).operations;
+    return FirebaseManagementApi(googleClient!).operations;
   }
 
   ProjectsDatabasesDocumentsResource get firestoreDocuments {
-    return FirestoreApi(googleClient).projects.databases.documents;
+    return FirestoreApi(googleClient!).projects.databases.documents;
   }
 
   ProjectsDatabasesResource get databases {
-    return FirestoreApi(googleClient).projects.databases;
+    return FirestoreApi(googleClient!).projects.databases;
   }
 
   InappproductsResource get inappproducts {
-    return AndroidPublisherApi(googleClient).inappproducts;
+    return AndroidPublisherApi(googleClient!).inappproducts;
   }
 
   String get projectId => _config['google_project_id'];
@@ -331,15 +335,15 @@ bool fileFilter(String it) =>
 Future<void> runCommand(
   String executable,
   List<String> arguments, {
-  String workingDirectory,
-  Map<String, String> environment,
+  required String workingDirectory,
+  Map<String, String>? environment,
   bool expectNonZeroExit = false,
-  int expectedExitCode,
-  String failureMessage,
+  int? expectedExitCode,
+  String? failureMessage,
   OutputMode outputMode = OutputMode.print,
-  CapturedOutput output,
+  CapturedOutput? output,
   bool skip = false,
-  bool Function(String) removeLine,
+  bool Function(String)? removeLine,
 }) async {
   assert(
       (outputMode == OutputMode.capture) == (output != null),
@@ -362,7 +366,7 @@ Future<void> runCommand(
     environment: environment,
   );
 
-  Future<List<List<int>>> savedStdout, savedStderr;
+  late Future<List<List<int>>> savedStdout, savedStderr;
   final Stream<List<int>> stdoutSource = process.stdout
       .transform<String>(const Utf8Decoder())
       .transform(const LineSplitter())
@@ -428,8 +432,8 @@ enum OutputMode { print, capture, discard }
 
 /// Stores command output from [runCommand] when used with [OutputMode.capture].
 class CapturedOutput {
-  String stdout;
-  String stderr;
+  late String stdout;
+  late String stderr;
 }
 
 String get clock {

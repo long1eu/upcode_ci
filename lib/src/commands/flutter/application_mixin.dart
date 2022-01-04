@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:googleapis_beta/firebase/v1beta1.dart';
 import 'package:path/path.dart';
 import 'package:upcode_ci/src/commands/command.dart';
@@ -14,16 +15,16 @@ mixin ApplicationMixin on EnvironmentMixin {
 
     final List<Map<String, dynamic>> clients = List<Map<String, dynamic>>.from(data['client']);
 
-    final Map<String, dynamic> clientData = clients.firstWhere(
-        (Map<String, dynamic> element) => element['client_info']['android_client_info']['package_name'] == androidAppId,
-        orElse: () => null);
+    final Map<String, dynamic>? clientData = clients.firstWhereOrNull(
+      (Map<String, dynamic> element) => element['client_info']['android_client_info']['package_name'] == androidAppId,
+    );
 
     if (clientData == null) {
       throw StateError('There is no Android app for \'$rawEnv\', create the app first.');
     }
 
-    final String apiKey = clientData['api_key'][0]['current_key'];
-    if (apiKey == null && apiKey.isNotEmpty) {
+    final String? apiKey = clientData['api_key'][0]['current_key'];
+    if (apiKey == null || apiKey.isNotEmpty) {
       throw StateError('There is no api key for\'$rawEnv\', create the app first.');
     }
 
@@ -48,9 +49,9 @@ mixin ApplicationMixin on EnvironmentMixin {
 
   Future<AndroidApp> getAndroidApp() async {
     final ListAndroidAppsResponse data = await androidAppsApi.list(firebaseProjectName);
-    final AndroidApp app = data.apps.firstWhere((AndroidApp element) {
+    final AndroidApp? app = data.apps?.firstWhereOrNull((AndroidApp element) {
       return element.packageName == androidAppId;
-    }, orElse: () => null);
+    });
     if (app == null) {
       throw ArgumentError(
           'This environment has not been created yet. You need to first call: \nflutter:environment create --env $rawEnv');
@@ -60,7 +61,7 @@ mixin ApplicationMixin on EnvironmentMixin {
 
   Future<IosApp> getIosApp() async {
     final ListIosAppsResponse data = await iosAppsApi.list(firebaseProjectName);
-    final IosApp app = data.apps.firstWhere((IosApp element) => element.bundleId == iosAppId, orElse: () => null);
+    final IosApp? app = data.apps?.firstWhere((IosApp element) => element.bundleId == iosAppId);
     if (app == null) {
       throw ArgumentError(
           'This environment has not been created yet. You need to first call: \nflutter:environment create --env $rawEnv');

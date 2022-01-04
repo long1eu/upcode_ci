@@ -1,10 +1,23 @@
+## 0.8.0
+
+Add null-safety, let me know if you have any errors, and I'll make sure to fix them ass soon as possible
+
+## 0.7.1
+
+Scrub google fields out of the api descriptor.
+See https://gist.github.com/kristiandrucker/d3a7c7b8e64f55ad4ebfa3634a96d5fe
+and https://issuetracker.google.com/issues/210014211
+
 ## 0.7.0
+
 * Breaking Change: require `grpc_tools_node_protoc_plugin` and `grpc-tools` be globally installed using `npm install -g`
 
 ## 0.6.6
+
 * update proto js definition from grpc to grpc-js
 
 ## 0.6.5
+
 * skip version in api deploy if we can't read it
 
 ## 0.6.4
@@ -53,7 +66,7 @@ api:
 
 ## 0.5.0
 * BREAKING CHANGE: don't increment the version when deploying api, just
-read the current one
+  read the current one
 
 ## 0.4.7
 * allow setting the version back to cloud with version set
@@ -108,9 +121,9 @@ read the current one
 
 ## 0.3.0
 * **Breaking** the way the version is saved in FRDB has changed, now the
-version is saved under the same name as the flutter module
+  version is saved under the same name as the flutter module
 * add ability to specify flutter and private folder when
-invoking any command
+  invoking any command
 
 ## 0.2.5
 * add coverage to tests
@@ -120,13 +133,11 @@ invoking any command
 
 ## 0.2.3+1
 * add different app id for android and ios
-* the environment command doesn't need env anymore, this command will
-  be split up into config and env
+* the environment command doesn't need env anymore, this command will be split up into config and env
 
 ## 0.2.3
 * add different app id for android and ios
-* the environment command doesn't need env anymore, this command will
-  be split up into config and env
+* the environment command doesn't need env anymore, this command will be split up into config and env
 
 ## 0.2.2
 * pub get before testing

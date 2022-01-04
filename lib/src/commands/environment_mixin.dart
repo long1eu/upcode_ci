@@ -21,7 +21,7 @@ mixin EnvironmentMixin on UpcodeCommand {
     });
   }
 
-  String get rawEnv => argResults['env'];
+  String get rawEnv => argResults!['env'];
 
   Map<String, dynamic> get flutterApiConfig {
     if (flutterConfig.isEmpty) {
@@ -29,8 +29,8 @@ mixin EnvironmentMixin on UpcodeCommand {
     }
 
     String env = '';
-    if (argResults.wasParsed('env')) {
-      env = this.env;
+    if (argResults!.wasParsed('env')) {
+      env = this.env!;
     }
     return <String, dynamic>{
       for (MapEntry<String, dynamic> entry
@@ -48,8 +48,8 @@ mixin EnvironmentMixin on UpcodeCommand {
     }
 
     String env = '';
-    if (argResults.wasParsed('env')) {
-      env = this.env;
+    if (argResults!.wasParsed('env')) {
+      env = this.env!;
     }
     return <String, dynamic>{
       for (MapEntry<String, dynamic> entry
@@ -61,8 +61,8 @@ mixin EnvironmentMixin on UpcodeCommand {
     };
   }
 
-  String get env {
-    if (!argResults.wasParsed('env')) {
+  String? get env {
+    if (!argResults!.wasParsed('env')) {
       return null;
     }
     final String env = rawEnv;
@@ -80,7 +80,7 @@ mixin EnvironmentMixin on UpcodeCommand {
     return env.replaceAll('/', '_').replaceAll('-', '_').toLowerCase();
   }
 
-  String get apiVersion => apiApiConfig['api_version'];
+  String? get apiVersion => apiApiConfig['api_version'];
 
   String get apiBaseName {
     if (apiApiConfig['api_base_name'] == null) {
@@ -102,7 +102,7 @@ mixin EnvironmentMixin on UpcodeCommand {
   }
 
   String get hostSuffix {
-    return env == 'prod' ? '' : '${env.replaceAll('_', '-')}';
+    return env == 'prod' ? '' : '${env?.replaceAll('_', '-')}';
   }
 
   String get apiVersionSuffix => apiVersion ?? '';
@@ -128,7 +128,7 @@ mixin EnvironmentMixin on UpcodeCommand {
   }
 
   List<String> get cloudSqlInstances {
-    final YamlList instances = apiConfig['cloudsql_instances'];
+    final YamlList? instances = apiConfig['cloudsql_instances'];
 
     if (instances == null) {
       return <String>[];
@@ -166,7 +166,7 @@ mixin EnvironmentMixin on UpcodeCommand {
     }).toList();
   }
 
-  String getApiConfigFile(Version version) {
+  String getApiConfigFile(Version? version) {
     final String key = base64Encode(utf8.encode(join(privateDir, 'service_account.json').readAsStringSync()));
     final Map<String, dynamic> config = <String, dynamic>{
       ...apiApiConfig,
@@ -189,7 +189,7 @@ mixin EnvironmentMixin on UpcodeCommand {
 }
 
 class ApiImage {
-  ApiImage({/*@required*/ this.name, /*@required*/ this.selector, /*@required*/ this.cloudSqlInstances});
+  ApiImage({required this.name, required this.selector, required this.cloudSqlInstances});
 
   final String name;
   final String selector;

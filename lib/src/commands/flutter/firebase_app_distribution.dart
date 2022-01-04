@@ -53,21 +53,21 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
 
     String appId;
     String path;
-    if (argResults['platform'] == 'android') {
-      appId = (await getAndroidApp()).appId;
+    if (argResults!['platform'] == 'android') {
+      appId = (await getAndroidApp()).appId!;
       String fileName;
-      if (argResults.wasParsed('env')) {
+      if (argResults!.wasParsed('env')) {
         fileName = 'app-$env-release.apk';
       } else {
         fileName = 'app-release.apk';
       }
 
       path = join(flutterDir, 'build', 'app', 'outputs', 'flutter-apk', fileName);
-    } else if (argResults['platform'] == 'ios') {
-      appId = (await getIosApp()).appId;
+    } else if (argResults!['platform'] == 'ios') {
+      appId = (await getIosApp()).appId!;
 
       String fileName;
-      if (argResults.wasParsed('env')) {
+      if (argResults!.wasParsed('env')) {
         fileName = 'Runner_adhoc_$env.ipa';
       } else {
         fileName = 'Runner_adhoc.ipa';
@@ -87,14 +87,14 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
           '--app',
           appId,
           '--groups',
-          argResults['groups'].join(','),
-          if (argResults.wasParsed('release-notes')) ...<String>[
+          argResults!['groups'].join(','),
+          if (argResults!.wasParsed('release-notes')) ...<String>[
             '--release-notes-file',
-            argResults['release-notes'],
+            argResults!['release-notes'],
           ],
-          if (argResults.wasParsed('token')) ...<String>[
+          if (argResults!.wasParsed('token')) ...<String>[
             '--token',
-            argResults['token'],
+            argResults!['token'],
           ]
         ],
         workingDirectory: pwd,

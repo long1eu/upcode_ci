@@ -37,7 +37,7 @@ class EndpointsDeployCommand extends UpcodeCommand {
 
   @override
   FutureOr<dynamic> run() async {
-    await runner.run(<String>['protos', '--descriptor']);
+    await runner!.run(<String>['protos', '--descriptor']);
 
     final CapturedOutput capturedOutput = CapturedOutput();
     await execute(
@@ -87,11 +87,11 @@ class GatewayDeployCommand extends UpcodeCommand with EnvironmentMixin {
 
   @override
   FutureOr<dynamic> run() async {
-    await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
+    await runner!.run(<String>['api:environment', 'set', '--env', rawEnv]);
     await execute(
       () => runCommand(
         './gcloud_build_image',
-        <String>['-s', gatewayHost, '-c', argResults['configuration_id'], '-p', projectId],
+        <String>['-s', gatewayHost, '-c', argResults!['configuration_id'], '-p', projectId],
         workingDirectory: apiDir,
       ),
       'Configure the gateway',
@@ -143,10 +143,6 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
   final String description = 'Builds and deploys the service image. This assumes you already set the environment.';
 
   Future<void> _deployImage(String apiName, List<String> cloudSqlInstances, int minInstances) async {
-    if (apiName == null) {
-      throw StateError('Unknown image');
-    }
-
     final String imageUrl = 'gcr.io/$projectId/$apiName';
 
     await execute(
@@ -201,16 +197,16 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
 
   @override
   FutureOr<dynamic> run() async {
-    await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
-    await runner.run(<String>['api:version', 'read']);
+    await runner!.run(<String>['api:environment', 'set', '--env', rawEnv]);
+    await runner!.run(<String>['api:version', 'read']);
     await execute(
       () => runCommand('npm', <String>['run', 'build'], workingDirectory: apiDir),
       'Build service sources',
     );
 
     final int minInstances = int.parse('${apiConfig['min_instances'] ?? 0}');
-    if (argResults.wasParsed('image')) {
-      final String name = argResults['image'];
+    if (argResults!.wasParsed('image')) {
+      final String name = argResults!['image'];
 
       final int index = images.indexWhere((ApiImage image) => image.name == name);
       await _deployImage(apiNames[index], images[index].cloudSqlInstances, minInstances);
@@ -243,21 +239,21 @@ class AllDeployCommand extends UpcodeCommand with EnvironmentMixin {
       () => runCommand('npm', <String>['install'], workingDirectory: apiDir),
       'Get service dependencies',
     );
-    await runner.run(<String>['protos', '--js']);
-    await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
-    final String configurationId = await runner.run(<String>['api:deploy', 'endpoints']);
-    await runner.run(<String>['api:deploy', 'gateway', '--env', rawEnv, '--configuration_id', configurationId]);
-    final bool deployService = argResults['deploy-service'];
+    await runner!.run(<String>['protos', '--js']);
+    await runner!.run(<String>['api:environment', 'set', '--env', rawEnv]);
+    final String configurationId = await runner!.run(<String>['api:deploy', 'endpoints']);
+    await runner!.run(<String>['api:deploy', 'gateway', '--env', rawEnv, '--configuration_id', configurationId]);
+    final bool deployService = argResults!['deploy-service'];
 
     if (deployService) {
-      await runner.run(<String>[
+      await runner!.run(<String>[
         'api:deploy',
         'service',
         '--env',
         rawEnv,
-        if (argResults.wasParsed('image')) ...<String>[
+        if (argResults!.wasParsed('image')) ...<String>[
           '--image',
-          argResults['image'],
+          argResults!['image'],
         ],
       ]);
     }

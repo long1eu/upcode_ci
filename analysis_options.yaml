@@ -8,6 +8,9 @@ analyzer:
     todo: ignore
     sdk_version_async_exported_from_core: ignore
     implementation_imports: ignore
+  exclude:
+    - "lib/src/commands/proto/**.pb*.dart"
+    - "other_tools/**/*.dart"
 
 linter:
   rules:

@@ -48,12 +48,12 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       'Increment the cloud version of the Flutter app and update the flutter files to reflect that version.';
 
   @override
-  FlutterVersionCommand get parent => super.parent;
+  FlutterVersionCommand get parent => super.parent as FlutterVersionCommand;
 
   @override
   String get versionType {
-    if (argResults.wasParsed('type')) {
-      return argResults['type'];
+    if (argResults!.wasParsed('type')) {
+      return argResults!['type'];
     } else {
       return super.versionType;
     }
@@ -65,7 +65,7 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       flutterGeneratedDir.dir.createSync(recursive: true);
     }
 
-    if (argResults.wasParsed('compute')) {
+    if (argResults!.wasParsed('compute')) {
       Map<String, dynamic> data = await execute(getRawVersion, 'Get version from cloud');
       data = await execute(
         () async {
@@ -73,10 +73,10 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
           await runCommand(
             'dart',
             <String>[
-              argResults['compute'],
+              argResults!['compute'],
               jsonEncode(<String, dynamic>{
                 ...data,
-                'operation': argResults['operation'],
+                'operation': argResults!['operation'],
               }),
             ],
             outputMode: OutputMode.capture,
@@ -98,7 +98,7 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       await execute(() => setRawVersion(data), 'Set back to cloud: $data');
     } else {
       Version version = await execute(getVersion, 'Get current version from cloud');
-      if (argResults['operation'] == 'release') {
+      if (argResults!['operation'] == 'release') {
         version = await execute(version.releaseVersion, 'Increment Flutter version');
       } else {
         version = await execute(version.patchVersion, 'Increment Flutter version');
@@ -107,16 +107,16 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       await execute(() => setVersion(version), 'Set version back to cloud: $version');
     }
 
-    await runner.run(<String>[
+    await runner!.run(<String>[
       'flutter:version',
       'read',
-      if (argResults.wasParsed('env')) ...<String>[
+      if (argResults!.wasParsed('env')) ...<String>[
         '--env',
-        argResults['env'],
+        argResults!['env'],
       ],
-      if (argResults.wasParsed('type')) ...<String>[
+      if (argResults!.wasParsed('type')) ...<String>[
         '--type',
-        argResults['type'],
+        argResults!['type'],
       ],
     ]);
   }
@@ -137,12 +137,12 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
       'Read the cloud version of the Flutter app and update the flutter files to reflect that version.';
 
   @override
-  FlutterVersionCommand get parent => super.parent;
+  FlutterVersionCommand get parent => super.parent as FlutterVersionCommand;
 
   @override
   String get versionType {
-    if (argResults.wasParsed('type')) {
-      return argResults['type'];
+    if (argResults!.wasParsed('type')) {
+      return argResults!['type'];
     } else {
       return super.versionType;
     }
@@ -156,14 +156,14 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
 
     final Map<String, dynamic> data = await getRawVersion();
     await execute<void>(
-      () => runner.run(<String>[
+          () => runner!.run(<String>[
         'flutter:version',
         'set',
         '--versionName',
         data['versionName'] ?? '0.0.0',
         '--versionCode',
-        '${data['versionCode']}' ?? '0',
-        ...argResults.arguments,
+        '${data['versionCode'] ?? 0}',
+        ...argResults!.arguments,
       ]),
       'Setting version $data',
     );
@@ -192,12 +192,12 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
       'Set a version regardless of the the cloud version for the Flutter app and update the flutter files to reflect that version.';
 
   @override
-  FlutterVersionCommand get parent => super.parent;
+  FlutterVersionCommand get parent => super.parent as FlutterVersionCommand;
 
   @override
   String get versionType {
-    if (argResults.wasParsed('type')) {
-      return argResults['type'];
+    if (argResults!.wasParsed('type')) {
+      return argResults!['type'];
     } else {
       return super.versionType;
     }
@@ -292,22 +292,22 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
       flutterGeneratedDir.dir.createSync(recursive: true);
     }
 
-    String versionName;
-    int versionCode;
+    String? versionName;
+    int? versionCode;
 
-    if (argResults.wasParsed('version')) {
-      Version version = Version.parse(argResults['version']);
-      version = Version.parse('$version${argResults.wasParsed('env') ? '+$env' : ''}');
+    if (argResults!.wasParsed('version')) {
+      Version version = Version.parse(argResults!['version']);
+      version = Version.parse('$version${argResults!.wasParsed('env') ? '+$env' : ''}');
 
       versionName = version.versionName;
       versionCode = version.versionCode;
     } else {
-      if (!argResults.wasParsed('versionName') || !argResults.wasParsed('versionCode')) {
+      if (!argResults!.wasParsed('versionName') || !argResults!.wasParsed('versionCode')) {
         throw ArgumentError('You need to pass versionName and versionCode when not specifying version.');
       }
 
-      versionName = argResults['versionName'];
-      versionCode = int.parse(argResults['versionCode']);
+      versionName = argResults!['versionName'];
+      versionCode = int.tryParse(argResults!['versionCode'] ?? '');
 
       if (versionName == null || versionCode == null) {
         throw ArgumentError(
@@ -315,13 +315,13 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
       }
     }
 
-    await execute(() => _updateYaml(versionName, versionCode), 'Update pubspec.yaml file');
-    await execute(() => _updateIos(versionName, versionCode), 'Updating ios Generated.xcconfig');
-    await execute(() => _updateMacos(versionName, versionCode), 'Updating macos Flutter-Generated.xcconfig');
-    await execute(() => _updateAndroid(versionName, versionCode), 'Updating version.properties');
-    await execute(() => _updateFlutter(versionName, versionCode), 'Updating version.dart');
+    await execute(() => _updateYaml(versionName!, versionCode!), 'Update pubspec.yaml file');
+    await execute(() => _updateIos(versionName!, versionCode!), 'Updating ios Generated.xcconfig');
+    await execute(() => _updateMacos(versionName!, versionCode!), 'Updating macos Flutter-Generated.xcconfig');
+    await execute(() => _updateAndroid(versionName!, versionCode!), 'Updating version.properties');
+    await execute(() => _updateFlutter(versionName!, versionCode!), 'Updating version.dart');
 
-    if (argResults.wasParsed('update-cloud') && (argResults['update-cloud'] ?? false)) {
+    if (argResults!.wasParsed('update-cloud') && (argResults!['update-cloud'] ?? false)) {
       await execute(
         () {
           return setRawVersion(<String, dynamic>{

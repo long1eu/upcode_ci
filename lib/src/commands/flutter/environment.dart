@@ -26,7 +26,7 @@ class FlutterEnvironmentCommand extends UpcodeCommand {
 
 mixin _FlutterEnvironmentCommandMixin on UpcodeCommand {
   @override
-  FlutterEnvironmentCommand get parent => super.parent;
+  FlutterEnvironmentCommand get parent => super.parent as FlutterEnvironmentCommand;
 }
 
 class FlutterSetEnvironmentCommand extends UpcodeCommand
@@ -61,7 +61,7 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
         .indexWhere((XmlNode element) => element is XmlElement && element.getAttribute('name') == 'RunManager');
 
     final XmlNode runManager =
-        (runManagerIndex != -1 ? projectNode.children.removeAt(runManagerIndex) : _intelliJRunManager(env)).copy();
+        (runManagerIndex != -1 ? projectNode.children.removeAt(runManagerIndex) : _intelliJRunManager(env!)).copy();
 
     runManager.setAttribute('selected', 'Flutter.$env');
     if (!runManager.children.any((XmlNode element) =>
@@ -70,7 +70,7 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
         element.getAttribute('name') == env &&
         element.getAttribute('type') == 'FlutterRunConfigurationType' &&
         element.getAttribute('factoryName') == 'Flutter')) {
-      runManager.children.add(_intelliJConfiguration(env, join(flutterDir, 'lib', 'main.dart')));
+      runManager.children.add(_intelliJConfiguration(env!, join(flutterDir, 'lib', 'main.dart')));
     }
 
     projectNode.children.add(runManager);
@@ -84,11 +84,11 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
       ..writeln('// ignore: avoid_classes_with_only_static_members')
       ..writeln('class Config {');
 
-    if (argResults.wasParsed('env')) {
+    if (argResults!.wasParsed('env')) {
       buffer.writeln('  static const String environment = \'$env\';');
     }
 
-    if (projectId != null) {
+    if (config.containsKey('google_project_id')) {
       final String androidKey = await execute(androidApiKey, 'Reading Android API key');
       final String iosKey = await execute(iosApiKey, 'Reading iOS API key');
 
@@ -112,14 +112,13 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
 
   @override
   FutureOr<dynamic> run() async {
-    print('projectId: $projectId');
-    if (projectId != null) {
+    if (config.containsKey('google_project_id')) {
       await initFirebase();
       await execute(saveAndroidConfig, 'Saving Firebase configuration for Android');
       await execute(saveIosConfig, 'Saving Firebase configuration for iOS');
     }
 
-    if (argResults.wasParsed('env')) {
+    if (argResults!.wasParsed('env')) {
       await execute(_setIdeaEnv, 'Updating IntelliJ Idea run configuration.');
     }
     await execute(_saveFlutterConfiguration, 'Saving Flutter configuration');

@@ -36,7 +36,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   final String description = 'Set an already existing environment to API.';
 
   @override
-  String get versionType => argResults['type'];
+  String get versionType => argResults!['type'];
 
   void _updateYamlField(List<String> lines, String field, String value) {
     int index = lines.indexWhere((String element) => element.startsWith('$field:'));
@@ -49,7 +49,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   }
 
   Future<void> _updateConfig() async {
-    Version version;
+    Version? version;
     try {
       version = await getVersion();
     } catch (_) {}

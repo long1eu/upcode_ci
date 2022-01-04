@@ -33,7 +33,7 @@ class FlutterFastlaneDeployCommand extends UpcodeCommand with EnvironmentMixin, 
 
   @override
   FutureOr<dynamic> run() async {
-    if (argResults['platform'] == 'android') {
+    if (argResults!['platform'] == 'android') {
       final String serviceAccountKey = join(privateDir, 'service_account.json');
       final String path = join(flutterDir, 'build', 'app', 'outputs', 'bundle', '$env\Release', 'app-$env-release.aab');
 
@@ -55,7 +55,7 @@ class FlutterFastlaneDeployCommand extends UpcodeCommand with EnvironmentMixin, 
         ),
         description,
       );
-    } else if (argResults['platform'] == 'ios') {
+    } else if (argResults!['platform'] == 'ios') {
       await execute(
         () => runCommand(
           'bundle',

@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:upcode_ci/src/commands/command.dart';
+import 'package:upcode_ci/src/commands/proto/remove_proto_references.dart';
 
 class ProtosCommand extends UpcodeCommand {
   ProtosCommand(Map<String, dynamic> config) : super(config) {
@@ -36,7 +37,7 @@ class ProtosCommand extends UpcodeCommand {
   List<String> get _protoFiles => Directory(protoSrcDir)
       .listSync(recursive: true)
       .whereType<File>()
-      .where((File element) => element.path.endsWith('.proto'))
+      .where((File element) => element.path.endsWith('.proto') && !element.path.contains('google'))
       .map((File element) => element.path)
       .toList();
 
@@ -49,15 +50,15 @@ class ProtosCommand extends UpcodeCommand {
     bool buildJs;
     bool buildDart;
     bool descriptor;
-    if (!argResults.wasParsed('js') && !argResults.wasParsed('dart') && !argResults.wasParsed('descriptor')) {
+    if (!argResults!.wasParsed('js') && !argResults!.wasParsed('dart') && !argResults!.wasParsed('descriptor')) {
       buildJs = true;
       buildDart = true;
       descriptor = true;
     } else {
-      final bool all = argResults['all'];
-      buildJs = argResults['js'] || all;
-      buildDart = argResults['dart'] || all;
-      descriptor = argResults['descriptor'] || all;
+      final bool all = argResults!['all'];
+      buildJs = argResults!['js'] || all;
+      buildDart = argResults!['dart'] || all;
+      descriptor = argResults!['descriptor'] || all;
     }
 
     if (!buildJs && !buildDart && !descriptor) {
@@ -77,7 +78,7 @@ class ProtosCommand extends UpcodeCommand {
       Directory(dartProtoDir).createSync(recursive: true);
     }
 
-    String jsPluginPath;
+    String? jsPluginPath;
     if (buildJs) {
       final ProcessResult result =
           Process.runSync(Platform.isWindows ? 'where' : 'which', <String>['grpc_tools_node_protoc_plugin']);
@@ -113,5 +114,10 @@ class ProtosCommand extends UpcodeCommand {
         if (descriptor) 'api descriptor',
       ].join(', ')}',
     );
+
+    if (descriptor) {
+      execute(() => removeProtoReferences(apiDescriptor),
+          'Scrub google fields out of the api descriptor. See https://gist.github.com/kristiandrucker/d3a7c7b8e64f55ad4ebfa3634a96d5fe and https://issuetracker.google.com/issues/210014211');
+    }
   }
 }

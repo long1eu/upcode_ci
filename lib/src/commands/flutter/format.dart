@@ -26,7 +26,7 @@ class FlutterFormatCommand extends UpcodeCommand {
 
   @override
   FutureOr<dynamic> run() async {
-    final bool modify = argResults['modify'] ?? false;
+    final bool modify = argResults!['modify'] ?? false;
 
     for (final String module in formattedModules) {
       final List<String> files = Directory(module)

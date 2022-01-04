@@ -82,7 +82,7 @@ class FlutterModule {
     final Map<String, Map<String, String>> values = this.values;
     final Map<String, String> englishData = values['en'];
     final List<String> englishKeys = englishData.keys.toList();
-    for (String language in values.keys) {
+    for (final String language in values.keys) {
       final String data = createLanguageClass(language, englishKeys, values[language]);
       final File languageFile = File(join(output.path, 'strings_$language.dart'));
       languageFile.writeAsStringSync(data);

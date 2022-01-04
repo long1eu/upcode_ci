@@ -18,7 +18,7 @@ class FlutterGenerateCommand extends UpcodeCommand {
 
   @override
   FutureOr<void> run() async {
-    await runner.run(<String>['flutter:i18n']);
-    await runner.run(<String>['flutter:buildrunner']);
+    await runner!.run(<String>['flutter:i18n']);
+    await runner!.run(<String>['flutter:buildrunner']);
   }
 }

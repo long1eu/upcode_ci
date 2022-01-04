@@ -36,8 +36,8 @@ class SetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin {
 
   @override
   FutureOr<dynamic> run() async {
-    await runner.run(<String>['api:environment', 'set', '--env', rawEnv]);
-    await runner.run(<String>['flutter:environment', 'set', '--env', rawEnv]);
+    await runner!.run(<String>['api:environment', 'set', '--env', rawEnv]);
+    await runner!.run(<String>['flutter:environment', 'set', '--env', rawEnv]);
   }
 }
 
@@ -53,7 +53,7 @@ class CreateEnvironmentCommand extends UpcodeCommand with EnvironmentMixin {
   final String description = 'create a new environment';
 
   Future<void> _deployInitialGateway() async {
-    final String envSuffix = env == 'prod' ? '' : '-${env.replaceAll('_', '-')}';
+    final String envSuffix = env == 'prod' ? '' : '-${env!.replaceAll('_', '-')}';
     final String apiVersion = apiApiConfig['api_version'] == null ? '' : '-${apiApiConfig['api_version']}';
     final String gatewayName = '$gatewayBaseName$apiVersion$envSuffix';
 
@@ -85,6 +85,6 @@ class CreateEnvironmentCommand extends UpcodeCommand with EnvironmentMixin {
     await execute(_deployInitialGateway, 'Deploy the initial gateway');
     stdout.writeln('Add the "cloud_run_hash" to your upcode.yaml file under the "api" root and press Enter/Return.');
     stdin.readLineSync();
-    await runner.run(<String>['api:deploy', 'all', '--env', rawEnv]);
+    await runner!.run(<String>['api:deploy', 'all', '--env', rawEnv]);
   }
 }

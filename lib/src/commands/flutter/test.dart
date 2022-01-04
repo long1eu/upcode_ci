@@ -25,7 +25,7 @@ class FlutterTestCommand extends UpcodeCommand {
 
   @override
   FutureOr<dynamic> run() async {
-    final bool generatedCoverage = argResults['coverage'];
+    final bool generatedCoverage = argResults!['coverage'];
     for (final String module in testedModules) {
       final bool isFlutter = join(module, 'pubspec.yaml').readAsStringSync().contains('sdk: flutter');
 
