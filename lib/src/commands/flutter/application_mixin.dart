@@ -24,8 +24,8 @@ mixin ApplicationMixin on EnvironmentMixin {
     }
 
     final String? apiKey = clientData['api_key'][0]['current_key'];
-    if (apiKey == null || apiKey.isNotEmpty) {
-      throw StateError('There is no api key for\'$rawEnv\', create the app first.');
+    if (apiKey == null || apiKey.isEmpty) {
+      throw StateError('There is no api key for \'$rawEnv\', create the app first.');
     }
 
     return apiKey;

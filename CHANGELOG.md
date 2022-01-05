@@ -1,3 +1,7 @@
+## 0.8.2
+
+Fix generator not finding the API Key
+
 ## 0.8.1
 
 Fix google proto files not being included in generation
