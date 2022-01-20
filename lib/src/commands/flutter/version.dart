@@ -163,6 +163,10 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
         data['versionName'] ?? '0.0.0',
         '--versionCode',
         '${data['versionCode'] ?? 0}',
+        if (argResults!.wasParsed('env')) ...<String>[
+          '--env',
+          argResults!['env'],
+        ],
         ...argResults!.arguments,
       ]),
       'Setting version $data',
@@ -306,7 +310,7 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
         throw ArgumentError('You need to pass versionName and versionCode when not specifying version.');
       }
 
-      versionName = argResults!['versionName'];
+      versionName = argResults!['versionName'] + (argResults!.wasParsed('env') ? '+$env' : '');
       versionCode = int.tryParse(argResults!['versionCode'] ?? '');
 
       if (versionName == null || versionCode == null) {
