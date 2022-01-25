@@ -1,3 +1,7 @@
+## 0.8.4
+
+Generate client stubs for node proto
+
 ## 0.8.3
 
 Fix version set ignoring the env argument

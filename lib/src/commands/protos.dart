@@ -93,7 +93,7 @@ class ProtosCommand extends UpcodeCommand {
             if (buildJs) ...<String>[
               '--js_out=import_style=commonjs,binary:$protoApiOutDir',
               '--ts_out=generate_package_definition:$protoApiOutDir',
-              '--grpc_out=generate_package_definition,grpc_js:$protoApiOutDir',
+              '--grpc_out=grpc_js:$protoApiOutDir',
               '--plugin=protoc-gen-grpc=$jsPluginPath',
             ],
             if (buildDart) '--dart_out=grpc:$dartProtoDir',
