@@ -156,7 +156,7 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
 
     final Map<String, dynamic> data = await getRawVersion();
     await execute<void>(
-          () => runner!.run(<String>[
+      () => runner!.run(<String>[
         'flutter:version',
         'set',
         '--versionName',
@@ -299,9 +299,10 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
     String? versionName;
     int? versionCode;
 
+    final String versionEnv = argResults!.wasParsed('env') ? '+${env?.replaceAll('_', '-')}' : '';
     if (argResults!.wasParsed('version')) {
       Version version = Version.parse(argResults!['version']);
-      version = Version.parse('$version${argResults!.wasParsed('env') ? '+$env' : ''}');
+      version = Version.parse('$version$versionEnv');
 
       versionName = version.versionName;
       versionCode = version.versionCode;
@@ -310,7 +311,7 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
         throw ArgumentError('You need to pass versionName and versionCode when not specifying version.');
       }
 
-      versionName = argResults!['versionName'] + (argResults!.wasParsed('env') ? '+$env' : '');
+      versionName = argResults!['versionName'] + versionEnv;
       versionCode = int.tryParse(argResults!['versionCode'] ?? '');
 
       if (versionName == null || versionCode == null) {

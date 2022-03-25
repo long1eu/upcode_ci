@@ -1,3 +1,7 @@
+## 0.8.5
+
+Update version env argument to be used as a valid build name by replacing "_" with "-"
+
 ## 0.8.4
 
 Generate client stubs for node proto
