@@ -330,6 +330,8 @@ bool fileFilter(String it) =>
     !it.endsWith('.g.dart') &&
     !it.endsWith('.freezed.dart') &&
     !it.endsWith('.chopper.dart') &&
+    !it.endsWith('.gr.dart') &&
+    !it.endsWith('.config.dart') &&
     !it.endsWith('.test_coverage.dart');
 
 Future<void> runCommand(
