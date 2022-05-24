@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:googleapis_beta/firebase/v1beta1.dart';
 import 'package:http/http.dart';
 import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -16,20 +17,18 @@ mixin VersionMixin on UpcodeCommand {
     return split(normalize(File(flutterDir).absolute.path)).last;
   }
 
-  Uri get databaseUrl {
+  Future<Uri> getDatabaseUrl() async {
+    await initFirebase();
+    final FirebaseProject result = await projectsApi.get(firebaseProjectName);
+    final String baseUrl = result.resources!.realtimeDatabaseInstance!;
     final String databaseKey = join(privateDir, 'firebase_database.key').readAsStringSync();
-    final Map<String, dynamic> data =
-        Map<String, dynamic>.from(jsonDecode(join(androidAppDir, 'google-services.json').readAsStringSync()));
 
-    if (data['project_info'] != null && data['project_info']['firebase_url'] != null) {
-      return Uri.parse('${data['project_info']['firebase_url']}/$versionType/.json?auth=$databaseKey');
-    }
-
-    return Uri.parse('https://$projectId.firebaseio.com/$versionType/.json?auth=$databaseKey');
+    return Uri.parse('https://$baseUrl.firebaseio.com/$versionType/.json?auth=$databaseKey');
   }
 
   Future<Map<String, dynamic>> getRawVersion() async {
-    final Response data = await get(databaseUrl);
+    final Uri url = await getDatabaseUrl();
+    final Response data = await get(url);
     if (data.statusCode < 200 || data.statusCode >= 300) {
       throw StateError(data.body);
     }
@@ -51,7 +50,8 @@ mixin VersionMixin on UpcodeCommand {
   }
 
   Future<void> setRawVersion(Map<String, dynamic> version) async {
-    final Response data = await patch(databaseUrl, body: jsonEncode(version));
+    final Uri url = await getDatabaseUrl();
+    final Response data = await patch(url, body: jsonEncode(version));
 
     if (data.statusCode < 200 || data.statusCode >= 300) {
       throw StateError(data.body);

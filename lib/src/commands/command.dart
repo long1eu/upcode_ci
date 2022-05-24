@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:args/src/arg_results.dart';
 import 'package:googleapis/androidpublisher/v3.dart';
-import 'package:googleapis/firestore/v1.dart';
+import 'package:googleapis/firestore/v1.dart' hide ProjectsResource;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis_beta/firebase/v1beta1.dart';
 import 'package:path/path.dart' as path;
@@ -129,6 +129,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
       ..writeln('');
     _indent -= 2;
     return result;
+  }
+
+  ProjectsResource get projectsApi {
+    return FirebaseManagementApi(googleClient!).projects;
   }
 
   ProjectsAndroidAppsResource get androidAppsApi {

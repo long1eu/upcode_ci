@@ -1,3 +1,7 @@
+## 0.8.7
+
+Get the realtime database url for versioning from the firebase management api
+
 ## 0.8.6
 
 Exclude from formatting .gr and .config files
