@@ -1,3 +1,7 @@
+## 0.8.8
+
+Fixes a bug with version management when the database url was not correct
+
 ## 0.8.7
 
 Get the realtime database url for versioning from the firebase management api
