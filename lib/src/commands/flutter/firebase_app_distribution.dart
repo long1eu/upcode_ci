@@ -95,7 +95,9 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
           if (argResults!.wasParsed('token')) ...<String>[
             '--token',
             argResults!['token'],
-          ]
+          ],
+          '--project',
+          projectId,
         ],
         workingDirectory: pwd,
       ),
