@@ -1,3 +1,7 @@
+## 0.8.9
+
+Include the env in the application id when searching for it in firebase
+
 ## 0.8.8
 
 Fixes a bug with version management when the database url was not correct
