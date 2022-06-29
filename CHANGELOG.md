@@ -1,6 +1,6 @@
-## 0.8.9
+## 0.8.10
 
-Include the env in the application id when searching for it in firebase
+Fix previous update that would crash when trying to get the environment
 
 ## 0.8.8
 

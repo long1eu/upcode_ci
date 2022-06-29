@@ -9,14 +9,6 @@ import 'package:upcode_ci/src/commands/environment_mixin.dart';
 import 'package:xml2json/xml2json.dart';
 
 mixin ApplicationMixin on EnvironmentMixin {
-  String get envAndroidAppId {
-    return env == 'prod' ? androidAppId : '$androidAppId.$env';
-  }
-
-  String get envIosAppId {
-    return env == 'prod' ? iosAppId : '$iosAppId.$env';
-  }
-
   String androidApiKey() {
     final Map<String, dynamic> data =
         Map<String, dynamic>.from(jsonDecode(join(androidAppDir, 'google-services.json').readAsStringSync()));
@@ -24,8 +16,7 @@ mixin ApplicationMixin on EnvironmentMixin {
     final List<Map<String, dynamic>> clients = List<Map<String, dynamic>>.from(data['client']);
 
     final Map<String, dynamic>? clientData = clients.firstWhereOrNull(
-      (Map<String, dynamic> element) =>
-          element['client_info']['android_client_info']['package_name'] == envAndroidAppId,
+      (Map<String, dynamic> element) => element['client_info']['android_client_info']['package_name'] == androidAppId,
     );
 
     if (clientData == null) {
@@ -59,7 +50,7 @@ mixin ApplicationMixin on EnvironmentMixin {
   Future<AndroidApp> getAndroidApp() async {
     final ListAndroidAppsResponse data = await androidAppsApi.list(firebaseProjectName);
     final AndroidApp? app = data.apps?.firstWhereOrNull((AndroidApp element) {
-      return element.packageName == envAndroidAppId;
+      return element.packageName == androidAppId;
     });
     if (app == null) {
       throw ArgumentError(
@@ -70,7 +61,7 @@ mixin ApplicationMixin on EnvironmentMixin {
 
   Future<IosApp> getIosApp() async {
     final ListIosAppsResponse data = await iosAppsApi.list(firebaseProjectName);
-    final IosApp? app = data.apps?.firstWhere((IosApp element) => element.bundleId == envIosAppId);
+    final IosApp? app = data.apps?.firstWhere((IosApp element) => element.bundleId == iosAppId);
     if (app == null) {
       throw ArgumentError(
           'This environment has not been created yet. You need to first call: \nflutter:environment create --env $rawEnv');
