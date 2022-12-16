@@ -97,6 +97,7 @@ class GatewayDeployCommand extends UpcodeCommand with EnvironmentMixin {
       'Configure the gateway',
     );
 
+    final int minInstances = int.parse('${apiConfig['min_instances'] ?? 0}');
     await execute(
       () => runCommand(
         'gcloud',
@@ -104,7 +105,7 @@ class GatewayDeployCommand extends UpcodeCommand with EnvironmentMixin {
           'run',
           'deploy',
           gatewayName,
-          if (env == 'prod') ...<String>['--min-instances', '1'],
+          if (minInstances > 0) ...<String>['--min-instances', '$minInstances'],
           '--image',
           'gcr.io/$projectId/endpoints-runtime-serverless:$gatewayHost',
           '--allow-unauthenticated',

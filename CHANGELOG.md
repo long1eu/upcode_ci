@@ -1,3 +1,7 @@
+## 0.8.11
+
+Don't override the min instance on api deploy for the gateway
+
 ## 0.8.10
 
 Fix previous update that would crash when trying to get the environment
