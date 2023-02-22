@@ -12,8 +12,8 @@ class ProtosCommand extends UpcodeCommand {
   ProtosCommand(Map<String, dynamic> config) : super(config) {
     argParser
       ..addFlag('all', defaultsTo: false, help: 'Build all files.')
-      ..addFlag('js', defaultsTo: false, help: 'Build js proto files.')
-      ..addFlag('dart', defaultsTo: false, help: 'Build dart proto files.')
+      ..addFlag('backend', defaultsTo: false, help: 'Build backend proto files.', aliases: <String>['js'])
+      ..addFlag('flutter', defaultsTo: false, help: 'Build proto files for flutter.', aliases: <String>['dart'])
       ..addFlag('descriptor', defaultsTo: false, help: 'Generate API descriptor for Cloud Endpoints.');
   }
 
@@ -43,43 +43,41 @@ class ProtosCommand extends UpcodeCommand {
 
   @override
   FutureOr<dynamic> run() async {
-    if (!flutterGeneratedDir.dir.existsSync()) {
-      flutterGeneratedDir.dir.createSync(recursive: true);
-    }
-
-    bool buildJs;
-    bool buildDart;
+    bool buildBackend;
+    bool buildFlutter;
     bool descriptor;
-    if (!argResults!.wasParsed('js') && !argResults!.wasParsed('dart') && !argResults!.wasParsed('descriptor')) {
-      buildJs = true;
-      buildDart = true;
+    if (!argResults!.wasParsed('backend') &&
+        !argResults!.wasParsed('flutter') &&
+        !argResults!.wasParsed('descriptor')) {
+      buildBackend = true;
+      buildFlutter = true;
       descriptor = true;
     } else {
       final bool all = argResults!['all'];
-      buildJs = argResults!['js'] || all;
-      buildDart = argResults!['dart'] || all;
+      buildBackend = argResults!['backend'] || all;
+      buildFlutter = argResults!['flutter'] || all;
       descriptor = argResults!['descriptor'] || all;
     }
 
-    if (!buildJs && !buildDart && !descriptor) {
+    if (!buildBackend && !buildFlutter && !descriptor) {
       stdout.writeln('Nothing to build.');
       return;
     }
 
-    final List<String> dirsToDelete = <String>[if (buildDart) dartProtoDir, if (buildJs) protoApiOutDir];
+    final List<String> dirsToDelete = <String>[if (buildFlutter) flutterProtoDir, if (buildBackend) protoApiOutDir];
     if (dirsToDelete.isNotEmpty) {
       execute(() => _deleteCurrent(dirsToDelete), 'Delete existing proto implementation');
     }
 
-    if (!protoApiOutDir.existsSync()) {
+    if (buildBackend && !protoApiOutDir.existsSync()) {
       Directory(protoApiOutDir).createSync(recursive: true);
     }
-    if (!dartProtoDir.existsSync()) {
-      Directory(dartProtoDir).createSync(recursive: true);
+    if (buildFlutter && !flutterProtoDir.existsSync()) {
+      Directory(flutterProtoDir).createSync(recursive: true);
     }
 
     String? jsPluginPath;
-    if (buildJs) {
+    if (buildBackend && !isDartBackend) {
       final ProcessResult result =
           Process.runSync(Platform.isWindows ? 'where' : 'which', <String>['grpc_tools_node_protoc_plugin']);
       jsPluginPath = '${result.stdout}'.split('\n').first;
@@ -90,13 +88,16 @@ class ProtosCommand extends UpcodeCommand {
         return runCommand(
           'protoc',
           <String>[
-            if (buildJs) ...<String>[
-              '--js_out=import_style=commonjs,binary:$protoApiOutDir',
-              '--ts_out=generate_package_definition:$protoApiOutDir',
-              '--grpc_out=grpc_js:$protoApiOutDir',
-              '--plugin=protoc-gen-grpc=$jsPluginPath',
-            ],
-            if (buildDart) '--dart_out=grpc:$dartProtoDir',
+            if (buildBackend)
+              if (isDartBackend)
+                '--dart_out=grpc:$protoApiOutDir'
+              else ...<String>[
+                '--js_out=import_style=commonjs,binary:$protoApiOutDir',
+                '--ts_out=generate_package_definition:$protoApiOutDir',
+                '--grpc_out=grpc_js:$protoApiOutDir',
+                '--plugin=protoc-gen-grpc=$jsPluginPath',
+              ],
+            if (buildFlutter) '--dart_out=grpc:$flutterProtoDir',
             if (descriptor) ...<String>[
               '--include_imports',
               '--include_source_info',
@@ -109,8 +110,8 @@ class ProtosCommand extends UpcodeCommand {
         );
       },
       'Proto building: ${<String>[
-        if (buildJs) 'js implementation',
-        if (buildDart) 'dart implementation',
+        if (buildBackend) 'backend implementation',
+        if (buildFlutter) 'flutter implementation',
         if (descriptor) 'api descriptor',
       ].join(', ')}',
     );

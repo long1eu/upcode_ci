@@ -166,26 +166,6 @@ mixin EnvironmentMixin on UpcodeCommand {
     }).toList();
   }
 
-  String getApiConfigFile(Version? version) {
-    final String key = base64Encode(utf8.encode(join(privateDir, 'service_account.json').readAsStringSync()));
-    final Map<String, dynamic> config = <String, dynamic>{
-      ...apiApiConfig,
-      'key': key,
-      'projectId': projectId,
-      'projectLocation': projectLocation,
-      if (version != null) 'version': '$version',
-    };
-
-    final StringBuffer buffer = StringBuffer()..writeln('export const config = {');
-    for (final MapEntry<String, dynamic> entry in config.entries) {
-      buffer.writeln('  ${entry.key}: \'${entry.value}\',');
-    }
-    buffer //
-      ..writeln('  env: \'$env\'')
-      ..writeln('};');
-
-    return buffer.toString();
-  }
 }
 
 class ApiImage {

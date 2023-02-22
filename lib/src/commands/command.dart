@@ -235,7 +235,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   String get flutterGeneratedDir => path.join(flutterDir, 'lib', 'generated');
 
-  String get dartProtoDir => path.join(flutterGeneratedDir, 'protos');
+  String get flutterProtoDir => path.join(flutterGeneratedDir, 'protos');
 
   // tools
   String get toolsDir => path.join(pwd, 'ci', 'other_tools');
@@ -251,9 +251,27 @@ abstract class UpcodeCommand extends Command<dynamic> {
     return _config['protos_dir'].replaceAll('/', path.separator) ?? path.join(flutterResDir, 'protos');
   }
 
-  String get protoApiOutDir => path.join(apiDir, 'src', 'proto');
+  String get protoApiOutDir {
+    if (isDartBackend) {
+      return path.join(apiDir, 'lib', 'generated', 'protos');
+    } else {
+      return path.join(apiDir, 'src', 'proto');
+    }
+  }
+
+  String get apiOutDir {
+    if (isDartBackend) {
+      return path.join(apiDir, 'lib', 'generated');
+    } else {
+      return path.join(apiDir, 'src');
+    }
+  }
 
   String get apiDescriptor => join(protoSrcDir, 'api_descriptor.pb');
+
+  bool get isDartBackend {
+    return Directory(apiDir).listSync().any((FileSystemEntity file) => path.basename(file.path) == 'pubspec.yaml');
+  }
 }
 
 extension FileString on String {

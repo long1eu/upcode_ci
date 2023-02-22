@@ -199,11 +199,14 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
   @override
   FutureOr<dynamic> run() async {
     await runner!.run(<String>['api:environment', 'set', '--env', rawEnv]);
-    await runner!.run(<String>['api:version', 'read']);
-    await execute(
-      () => runCommand('npm', <String>['run', 'build'], workingDirectory: apiDir),
-      'Build service sources',
-    );
+
+    if (!isDartBackend) {
+      await runner!.run(<String>['api:version', 'read']);
+      await execute(
+        () => runCommand('npm', <String>['run', 'build'], workingDirectory: apiDir),
+        'Build service sources',
+      );
+    }
 
     final int minInstances = int.parse('${apiConfig['min_instances'] ?? 0}');
     if (argResults!.wasParsed('image')) {
@@ -236,11 +239,7 @@ class AllDeployCommand extends UpcodeCommand with EnvironmentMixin {
 
   @override
   FutureOr<dynamic> run() async {
-    await execute(
-      () => runCommand('npm', <String>['install'], workingDirectory: apiDir),
-      'Get service dependencies',
-    );
-    await runner!.run(<String>['protos', '--js']);
+    await runner!.run(<String>['protos', '--backend']);
     await runner!.run(<String>['api:environment', 'set', '--env', rawEnv]);
     final String configurationId = await runner!.run(<String>['api:deploy', 'endpoints']);
     await runner!.run(<String>['api:deploy', 'gateway', '--env', rawEnv, '--configuration_id', configurationId]);

@@ -1,3 +1,7 @@
+## 0.8.12
+
+Add support for Dart backends
+
 ## 0.8.11
 
 Don't override the min instance on api deploy for the gateway
