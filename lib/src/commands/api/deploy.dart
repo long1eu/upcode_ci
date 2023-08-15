@@ -4,13 +4,20 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:args/src/arg_results.dart';
+import 'package:http/http.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
+
+const String _kBaseImageName = 'gcr.io/endpoints-release/endpoints-runtime-serverless';
 
 class ApiDeployCommand extends UpcodeCommand {
   ApiDeployCommand(Map<String, dynamic> config) : super(config) {
     addSubcommand(AllDeployCommand(config));
+    addSubcommand(GcloudBuildImageCommand(config));
 
     addSubcommand(EndpointsDeployCommand(config));
     addSubcommand(GatewayDeployCommand(config));
@@ -63,20 +70,170 @@ class EndpointsDeployCommand extends UpcodeCommand {
 
     final Map<String, dynamic> serviceDeployResult =
         Map<String, dynamic>.from(jsonDecode(capturedOutput.stdout)['serviceConfig']);
-    print(serviceDeployResult['id']);
+    stdout.writeln('Config id: ${serviceDeployResult['id']}');
     return serviceDeployResult['id'];
+  }
+}
+
+class GcloudBuildImageCommand extends UpcodeCommand {
+  GcloudBuildImageCommand(Map<String, dynamic> config) : super(config) {
+    argParser
+      ..addOption('config_id', abbr: 'c', mandatory: true)
+      ..addOption('service', abbr: 's', mandatory: true)
+      ..addOption('project', abbr: 'p')
+      ..addOption('esp_tag', abbr: 'v')
+      ..addOption('zone', abbr: 'z')
+      ..addOption('base_image', abbr: 'i');
+  }
+
+  @override
+  final String name = 'gcloud_build_image';
+
+  @override
+  final String description =
+      'Transcription of the gcloud_build_image command that you can find here https://github.com/GoogleCloudPlatform/esp-v2/blob/master/docker/serverless/gcloud_build_image';
+
+  Future<String> _getEspFullVersion(String espTag) async {
+    final CapturedOutput output = CapturedOutput();
+    await execute(
+      () => runCommand(
+        'gcloud',
+        <String>[
+          'container',
+          'images',
+          'list-tags',
+          _kBaseImageName,
+          '--filter=tags~^$espTag\$',
+          '--format=json',
+        ],
+        outputMode: OutputMode.capture,
+        output: output,
+        workingDirectory: apiDir,
+      ),
+      'Determining fully-qualified ESP version for tag: $espTag',
+    );
+
+    final List<Version> tags = List<Map<String, dynamic>>.from(jsonDecode(output.stdout) as List<dynamic>)
+        .map((Map<String, dynamic> item) => Version.parse(List<String>.from(item['tags']).last))
+        .toList()
+      ..sort();
+
+    if (tags.isEmpty) {
+      stderr.writeln('Did not find ESP version: $espTag');
+      exit(1);
+    }
+
+    return tags.last.toString();
+  }
+
+  @override
+  FutureOr<void> run() async {
+    String espTag = '2';
+    String zone = '';
+    String baseImage = '';
+    String? espFullVersion;
+
+    final ArgResults result = argResults!;
+    final String configId = result['config_id'];
+    final String service = result['service'];
+    final String project = result['project'] ?? projectId;
+
+    if (result.wasParsed('esp_tag')) {
+      espTag = result['v'];
+    }
+    if (result.wasParsed('zone')) {
+      zone = result['zone'];
+    }
+    if (result.wasParsed('base_image')) {
+      espFullVersion = 'custom';
+      baseImage = result['base_image'];
+    } else {
+      baseImage = '$_kBaseImageName:$espTag';
+    }
+
+    stdout.writeln('Using base image: $baseImage');
+    espFullVersion ??= await _getEspFullVersion(espTag);
+    stdout.writeln('Building image for ESP version: $espFullVersion');
+
+    final Directory tempDir = await Directory.systemTemp.createTemp('docker.');
+    final String serviceJsonFilePath = '${tempDir.path}/service.json';
+
+    final CapturedOutput output = CapturedOutput();
+    await execute(
+      () => runCommand(
+        'gcloud',
+        <String>['auth', 'print-access-token'],
+        outputMode: OutputMode.capture,
+        output: output,
+        workingDirectory: apiDir,
+      ),
+      'Get gcloud token.',
+    );
+
+    final Response response = await get(
+      Uri.parse(
+        'https://servicemanagement.googleapis.com/v1/services/$service/configs/$configId?view=FULL',
+      ),
+      headers: <String, String>{
+        'Authorization': 'Bearer ${output.stdout.split('\n').first}',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      stderr.writeln('Failed to download service config');
+      exit(1);
+    }
+
+    File(serviceJsonFilePath).writeAsStringSync(response.body);
+
+    final String espArgs = config['esp_args'] ??
+        '^++^--cors_preset=basic++--cors_allow_headers="keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,DNT,X-Requested-With,If-Modified-Since,Range,Authorization,x-api-key"++--cors_expose_headers="grpc-status,grpc-message"';
+
+    final String dockerContent = '''
+FROM $baseImage
+
+USER root
+ENV ENDPOINTS_SERVICE_PATH /etc/endpoints/service.json
+COPY service.json \${ENDPOINTS_SERVICE_PATH}
+RUN chown -R envoy:envoy \${ENDPOINTS_SERVICE_PATH} && chmod -R 755 \${ENDPOINTS_SERVICE_PATH}
+USER envoy
+
+ENV ESPv2_ARGS $espArgs
+
+ENTRYPOINT ["/env_start_proxy.py"]
+  ''';
+
+    await File('${tempDir.path}/Dockerfile').writeAsString(dockerContent);
+
+    String newImage = 'gcr.io/$project/endpoints-runtime-serverless:$service';
+    if (zone.isNotEmpty) {
+      newImage = '$zone.$newImage';
+    }
+
+    await execute(
+      () => runCommand(
+        'gcloud',
+        <String>[
+          'builds',
+          'submit',
+          '--tag',
+          newImage,
+          '.',
+          '--project',
+          project,
+        ],
+        workingDirectory: apiDir,
+      ),
+      'Build gateway image.',
+    );
+
+    await tempDir.delete(recursive: true);
   }
 }
 
 class GatewayDeployCommand extends UpcodeCommand with EnvironmentMixin {
   GatewayDeployCommand(Map<String, dynamic> config) : super(config) {
-    argParser
-      ..addOption('env', abbr: 'e', help: 'The name of the environment you want to deploy the gateway for.')
-      ..addOption(
-        'configuration_id',
-        abbr: 'c',
-        help: 'The configuration id received when deploying the endpoints configuration.',
-      );
+    argParser.addOption('env', abbr: 'e', help: 'The name of the environment you want to deploy the gateway for.');
   }
 
   @override
@@ -87,16 +244,6 @@ class GatewayDeployCommand extends UpcodeCommand with EnvironmentMixin {
 
   @override
   FutureOr<dynamic> run() async {
-    await runner!.run(<String>['api:environment', 'set', '--env', rawEnv]);
-    await execute(
-      () => runCommand(
-        './gcloud_build_image',
-        <String>['-s', gatewayHost, '-c', argResults!['configuration_id'], '-p', projectId],
-        workingDirectory: apiDir,
-      ),
-      'Configure the gateway',
-    );
-
     final int minInstances = int.parse('${apiConfig['min_instances'] ?? 0}');
     await execute(
       () => runCommand(
@@ -242,7 +389,8 @@ class AllDeployCommand extends UpcodeCommand with EnvironmentMixin {
     await runner!.run(<String>['protos', '--backend']);
     await runner!.run(<String>['api:environment', 'set', '--env', rawEnv]);
     final String configurationId = await runner!.run(<String>['api:deploy', 'endpoints']);
-    await runner!.run(<String>['api:deploy', 'gateway', '--env', rawEnv, '--configuration_id', configurationId]);
+    await runner!.run(<String>['api:deploy', 'gcloud_build_image', '-s', gatewayHost, '-c', configurationId]);
+    await runner!.run(<String>['api:deploy', 'gateway', '--env', rawEnv]);
     final bool deployService = argResults!['deploy-service'];
 
     if (deployService) {

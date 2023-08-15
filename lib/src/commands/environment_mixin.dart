@@ -5,7 +5,6 @@
 import 'dart:convert';
 
 import 'package:path/path.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:yaml/yaml.dart';
 

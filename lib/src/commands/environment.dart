@@ -8,8 +8,6 @@ import 'dart:io';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
 
-import 'command.dart';
-
 class EnvironmentCommand extends UpcodeCommand with EnvironmentMixin {
   EnvironmentCommand(Map<String, dynamic> config) : super(config) {
     addSubcommand(SetEnvironmentCommand(config));

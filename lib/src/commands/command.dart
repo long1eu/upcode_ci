@@ -388,6 +388,7 @@ Future<void> runCommand(
     arguments,
     workingDirectory: workingDirectory,
     environment: environment,
+    runInShell: Platform.isWindows,
   );
 
   late Future<List<List<int>>> savedStdout, savedStderr;

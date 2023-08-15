@@ -1,12 +1,12 @@
 name: upcode_ci
-description: A colection of tools used by Upcode team
-version: 0.8.13
+description: A collection of tools used by Upcode team
+version: 0.9.0
 repository: https://github.com/long1eu/upcode_ci
 executables:
   upcode:
 
 environment:
-  sdk: '>=2.13.0 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   path: ^1.8.1

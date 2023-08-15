@@ -1,3 +1,12 @@
+## 0.9.0
+
+* convert the gcloud_build_image script to dart so we can run in on Windows also.
+  (https://github.com/GoogleCloudPlatform/esp-v2/blob/master/docker/serverless/gcloud_build_image) 
+  **Breaking**
+  * Since _gcloud_build_image_ can be removed and will not be used, if you previously had a custom _ESPv2_ARGS_ set inside the _gcloud_build_image_, you need to set it as an api config value with name _esp_args_ otherwise this will be the default: `^++^--cors_preset=basic++--cors_allow_headers="keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,DNT,X-Requested-With,If-Modified-Since,Range,Authorization,x-api-key"++--cors_expose_headers="grpc-status,grpc-message"`
+* set runInShell true for Windows when running commands.
+* remove unnecessary Idea folder.
+
 ## 0.8.13
 
 Use dart format instead flutter format
