@@ -1,3 +1,7 @@
+## 0.9.1
+
+Add support for using fvm to resolve dart or flutter commands for flutter only.
+
 ## 0.9.0
 
 * convert the gcloud_build_image script to dart so we can run in on Windows also.

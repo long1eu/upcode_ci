@@ -31,12 +31,11 @@ class FlutterTestCommand extends UpcodeCommand {
 
       if (isFlutter) {
         await execute(
-          () => runCommand('flutter', <String>['pub', 'get'], workingDirectory: module),
+          () => runFlutter(<String>['pub', 'get'], workingDirectory: module),
           'flutter pub get in $module',
         );
         await execute(
-          () => runCommand(
-            'flutter',
+          () => runFlutter(
             <String>[
               'test',
               if (generatedCoverage) '--coverage',
@@ -47,14 +46,13 @@ class FlutterTestCommand extends UpcodeCommand {
         );
       } else {
         await execute(
-          () => runCommand('pub', <String>['get'], workingDirectory: module),
+          () => runFlutter(<String>['pub', 'get'], workingDirectory: module),
           'pub get in $module',
         );
 
         await execute(
-          () => runCommand(
-            'pub',
-            <String>['run', if (generatedCoverage) 'test_coverage' else 'test'],
+          () => runFlutter(
+            <String>['pub', 'run', if (generatedCoverage) 'test_coverage' else 'test'],
             workingDirectory: module,
           ),
           'Runs the all the test in the $module module.',
