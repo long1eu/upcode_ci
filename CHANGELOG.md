@@ -1,3 +1,7 @@
+## 0.9.2
+
+Fix gateway deployment.
+
 ## 0.9.1
 
 Add support for using fvm to resolve dart or flutter commands for flutter only.

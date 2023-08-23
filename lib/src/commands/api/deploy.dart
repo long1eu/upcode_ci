@@ -113,10 +113,17 @@ class GcloudBuildImageCommand extends UpcodeCommand {
       'Determining fully-qualified ESP version for tag: $espTag',
     );
 
-    final List<Version> tags = List<Map<String, dynamic>>.from(jsonDecode(output.stdout) as List<dynamic>)
-        .map((Map<String, dynamic> item) => Version.parse(List<String>.from(item['tags']).last))
-        .toList()
-      ..sort();
+    final List<Version> tags = <Version>[];
+    for (final dynamic item in jsonDecode(output.stdout) as List<dynamic>) {
+      String version = '';
+      for (final String tag in List<String>.from(item['tags'])) {
+        version = tag.length > version.length ? tag : version;
+      }
+
+      tags.add(Version.parse(version));
+    }
+
+    tags.sort();
 
     if (tags.isEmpty) {
       stderr.writeln('Did not find ESP version: $espTag');
@@ -165,7 +172,7 @@ class GcloudBuildImageCommand extends UpcodeCommand {
         <String>['auth', 'print-access-token'],
         outputMode: OutputMode.capture,
         output: output,
-        workingDirectory: apiDir,
+        workingDirectory: tempDir.path,
       ),
       'Get gcloud token.',
     );
@@ -222,7 +229,7 @@ ENTRYPOINT ["/env_start_proxy.py"]
           '--project',
           project,
         ],
-        workingDirectory: apiDir,
+        workingDirectory: tempDir.path,
       ),
       'Build gateway image.',
     );
