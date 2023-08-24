@@ -1,3 +1,8 @@
+## 0.9.3
+
+Reverts 0.9.1 from using the current fvm installation since it doesn't work with CI/CD.
+A workaround can be found here https://github.com/kuhnroyal/flutter-fvm-config-action for GitHub Actions. 
+
 ## 0.9.2
 
 Fix gateway deployment.
