@@ -18,7 +18,8 @@ class FlutterAnalyzeCommand extends UpcodeCommand {
   FutureOr<dynamic> run() async {
     for (final String module in analyzedModules) {
       await execute(
-        () => runFlutter(
+        () => runCommand(
+          'flutter',
           <String>['analyze'],
           workingDirectory: module,
         ),

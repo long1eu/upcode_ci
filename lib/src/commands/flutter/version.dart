@@ -70,7 +70,8 @@ class FlutterIncrementVersionCommand extends UpcodeCommand with VersionMixin {
       data = await execute(
         () async {
           final CapturedOutput output = CapturedOutput();
-          await runFvmDart(
+          await runCommand(
+            'dart',
             <String>[
               argResults!['compute'],
               jsonEncode(<String, dynamic>{

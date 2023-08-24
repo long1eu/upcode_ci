@@ -247,8 +247,6 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   String get apiConfigFile => path.join(apiDir, 'api_config.yaml');
 
-  bool get hasFvm => Directory(path.join(flutterDir, '.fvm')).existsSync();
-
   String get protoSrcDir {
     return _config['protos_dir'].replaceAll('/', path.separator) ?? path.join(flutterResDir, 'protos');
   }
@@ -273,72 +271,6 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   bool get isDartBackend {
     return Directory(apiDir).listSync().any((FileSystemEntity file) => path.basename(file.path) == 'pubspec.yaml');
-  }
-
-  Future<void> runFlutter(
-    List<String> arguments, {
-    required String workingDirectory,
-    Map<String, String>? environment,
-    bool expectNonZeroExit = false,
-    int? expectedExitCode,
-    String? failureMessage,
-    OutputMode outputMode = OutputMode.print,
-    CapturedOutput? output,
-    bool skip = false,
-    bool Function(String)? removeLine,
-  }) async {
-    String executable = 'flutter';
-    if (hasFvm) {
-      executable = 'fvm';
-      arguments = <String>['flutter', ...arguments];
-    }
-
-    return runCommand(
-      executable,
-      arguments,
-      workingDirectory: workingDirectory,
-      environment: environment,
-      expectNonZeroExit: expectNonZeroExit,
-      expectedExitCode: expectedExitCode,
-      failureMessage: failureMessage,
-      outputMode: outputMode,
-      output: output,
-      skip: skip,
-      removeLine: removeLine,
-    );
-  }
-
-  Future<void> runFvmDart(
-    List<String> arguments, {
-    required String workingDirectory,
-    Map<String, String>? environment,
-    bool expectNonZeroExit = false,
-    int? expectedExitCode,
-    String? failureMessage,
-    OutputMode outputMode = OutputMode.print,
-    CapturedOutput? output,
-    bool skip = false,
-    bool Function(String)? removeLine,
-  }) async {
-    String executable = 'dart';
-    if (hasFvm) {
-      executable = 'fvm';
-      arguments = <String>['dart', ...arguments];
-    }
-
-    return runCommand(
-      executable,
-      arguments,
-      workingDirectory: workingDirectory,
-      environment: environment,
-      expectNonZeroExit: expectNonZeroExit,
-      expectedExitCode: expectedExitCode,
-      failureMessage: failureMessage,
-      outputMode: outputMode,
-      output: output,
-      skip: skip,
-      removeLine: removeLine,
-    );
   }
 }
 

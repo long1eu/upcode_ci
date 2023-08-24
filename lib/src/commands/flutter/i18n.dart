@@ -19,7 +19,8 @@ class FlutterI18nCommand extends UpcodeCommand {
   @override
   FutureOr<dynamic> run() async {
     await execute(
-      () => runFvmDart(
+      () => runCommand(
+        'dart',
         <String>[
           join(toolsDir, 'flutter_l10n', 'bin', 'main.dart'),
           '-s',

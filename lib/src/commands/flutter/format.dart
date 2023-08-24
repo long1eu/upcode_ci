@@ -37,7 +37,8 @@ class FlutterFormatCommand extends UpcodeCommand {
           .toList();
 
       await execute(
-        () => runFvmDart(
+        () => runCommand(
+          'dart',
           <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...files],
           workingDirectory: module,
         ),
