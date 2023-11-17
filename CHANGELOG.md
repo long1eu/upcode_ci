@@ -1,3 +1,7 @@
+## 0.10.1+beta
+
+* fix wrong dependency on http
+
 ## 0.10.0+beta
 
 **Breaking change info:**

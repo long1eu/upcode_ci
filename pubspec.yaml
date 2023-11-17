@@ -1,6 +1,6 @@
 name: upcode_ci
 description: A collection of tools used by Upcode team
-version: 0.10.0+beta
+version: 0.10.1+beta
 repository: https://github.com/long1eu/upcode_ci
 executables:
   upcode:
@@ -18,7 +18,7 @@ dependencies:
   intl: ^0.18.1
   args: ^2.4.2
   xml: ^6.4.2
-  http: ^1.1.0
+  http: ^0.13.0
   http_multi_server: ^3.2.1
   xml2json: ^6.2.1
   yaml: ^3.1.2
@@ -27,6 +27,3 @@ dependencies:
   collection: ^1.18.0
   grpc: ^3.2.4
   strings: ^2.0.3
-
-dependency_overrides:
-  http: ^1.1.0
