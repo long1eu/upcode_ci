@@ -1,3 +1,7 @@
+## 0.10.1
+
+* fix save release notes
+
 ## 0.10.0
 
 **Breaking change info:**
