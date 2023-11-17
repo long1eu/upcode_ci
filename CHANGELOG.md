@@ -1,3 +1,7 @@
+## 0.10.4
+
+* fix to camel case when settings env 
+
 ## 0.10.3
 
 * fix reading wrong project id

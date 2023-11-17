@@ -98,7 +98,7 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
     }
 
     for (final String key in flutterApiConfig.keys) {
-      String variableName = key.toCapitalised();
+      String variableName = key.toCamelCase();
       final List<String> parts = variableName.split('');
       variableName = <String>[parts.first.toLowerCase(), ...parts.skip(1)].join('');
       buffer.writeln('  static const String $variableName = \'${flutterApiConfig[key]}\';');

@@ -91,7 +91,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
     }
 
     for (final String key in config.keys) {
-      String variableName = key.toCapitalised();
+      String variableName = key.toCamelCase();
       final List<String> parts = variableName.split('');
       variableName = <String>[parts.first.toLowerCase(), ...parts.skip(1)].join('');
       buffer.writeln('  static const String $variableName = \'${config[key]}\';');
