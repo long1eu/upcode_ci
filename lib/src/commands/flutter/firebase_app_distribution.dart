@@ -15,6 +15,7 @@ import 'package:upcode_ci/src/commands/flutter/application_mixin.dart';
 class FadCommand extends UpcodeCommand with EnvironmentMixin, ApplicationMixin {
   FadCommand(Map<String, dynamic> config) : super(config) {
     addSubcommand(FadUploadCommand(config));
+    addSubcommand(FadDeleteOldReleaseCommand(config));
   }
 
   @override

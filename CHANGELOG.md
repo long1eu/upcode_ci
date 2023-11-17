@@ -1,4 +1,8 @@
-## 0.10.1
+## 0.10.2
+
+* fix missing command
+
+* ## 0.10.1
 
 * fix save release notes
 
