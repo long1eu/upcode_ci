@@ -1,3 +1,14 @@
+## 0.10.0
+
+**Breaking change info:**
+
+This deprecates `upcode flutter:fad` but it doesn't remove it yet. Make sure to update to `upcode fad upload`.
+
+Updates:
+* implement firebase app distribution in dart. This allows us not to install the node-js firebase-tools package.
+* add `update fad deleteOldReleases` where you can delete old releases on firebase app distribution.
+* update dependencies
+
 ## 0.10.1+beta
 
 * fix wrong dependency on http
