@@ -241,9 +241,11 @@ class FadDeleteOldReleaseCommand extends UpcodeCommand with EnvironmentMixin, Ap
       throw ArgumentError('Unknown platform.');
     }
 
+    // Note: we need the project number not the project name
+    final String projectId = appId.split(':')[1];
     final String appName = 'apps/$appId';
     final GoogleFirebaseAppdistroV1ListReleasesResponse response =
-        await appDistribution.projects.apps.releases.list('$firebaseProjectName/$appName', pageSize: 1000);
+        await appDistribution.projects.apps.releases.list('projects/$projectId/$appName', pageSize: 1000);
 
     final int limit = int.tryParse(argResults!['limit']) ?? 5;
 
@@ -255,7 +257,7 @@ class FadDeleteOldReleaseCommand extends UpcodeCommand with EnvironmentMixin, Ap
     if (names.isNotEmpty) {
       stdout.writeln('Deleting releases: ${names.join('\n')}');
       await appDistribution.projects.apps.releases.batchDelete(
-          GoogleFirebaseAppdistroV1BatchDeleteReleasesRequest(names: names), '$firebaseProjectName/$appName');
+          GoogleFirebaseAppdistroV1BatchDeleteReleasesRequest(names: names), 'projects/$projectId/$appName');
     }
   }
 }

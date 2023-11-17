@@ -1,3 +1,7 @@
+## 0.10.3
+
+* fix reading wrong project id
+
 ## 0.10.2
 
 * fix missing command
