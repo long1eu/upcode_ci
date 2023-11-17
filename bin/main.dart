@@ -10,6 +10,7 @@ import 'package:upcode_ci/src/commands/environment.dart';
 import 'package:upcode_ci/src/commands/flutter/analyze.dart';
 import 'package:upcode_ci/src/commands/flutter/fastlane.dart';
 import 'package:upcode_ci/src/commands/flutter/firebase_app_distribution.dart';
+import 'package:upcode_ci/src/commands/flutter/firebase_app_distribution_old.dart';
 import 'package:upcode_ci/src/commands/flutter/format.dart';
 import 'package:upcode_ci/src/commands/flutter/save_release_notes.dart';
 import 'package:upcode_ci/src/commands/flutter/test.dart';
@@ -34,7 +35,8 @@ void main(List<String> args) {
     ..addCommand(FlutterI18nCommand(config))
     ..addCommand(FlutterBuildRunnerCommand(config))
     ..addCommand(FlutterVersionCommand(config))
-    ..addCommand(FlutterFirebaseAppDistributionCommand(config))
+    ..addCommand(FlutterFirebaseAppDistributionCommand(args, config))
+    ..addCommand(FadCommand(config))
     ..addCommand(FlutterFastlaneDeployCommand(config))
     ..addCommand(FlutterEnvironmentCommand(config))
     ..addCommand(FlutterAnalyzeCommand(config))

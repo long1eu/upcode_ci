@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:args/src/arg_results.dart';
 import 'package:googleapis/androidpublisher/v3.dart';
+import 'package:googleapis/firebaseappdistribution/v1.dart' hide ProjectsResource;
 import 'package:googleapis/firestore/v1.dart' hide ProjectsResource;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis_beta/firebase/v1beta1.dart';
@@ -153,6 +154,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   ProjectsDatabasesResource get databases {
     return FirestoreApi(googleClient!).projects.databases;
+  }
+
+  FirebaseAppDistributionApi get appDistribution {
+    return FirebaseAppDistributionApi(googleClient!);
   }
 
   InappproductsResource get inappproducts {

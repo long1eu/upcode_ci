@@ -32,10 +32,10 @@ mixin EnvironmentMixin on UpcodeCommand {
       env = this.env!;
     }
     return <String, dynamic>{
-      for (MapEntry<String, dynamic> entry
+      for (final MapEntry<String, dynamic> entry
           in flutterConfig.entries.where((MapEntry<String, dynamic> element) => element.value is! Map))
         entry.key: entry.value,
-      for (MapEntry<String, dynamic> value in flutterConfig.entries
+      for (final MapEntry<String, dynamic> value in flutterConfig.entries
           .where((MapEntry<String, dynamic> element) => element.key == env && element.value is Map))
         ...value.value,
     };
@@ -51,10 +51,10 @@ mixin EnvironmentMixin on UpcodeCommand {
       env = this.env!;
     }
     return <String, dynamic>{
-      for (MapEntry<String, dynamic> entry
+      for (final MapEntry<String, dynamic> entry
           in apiConfig.entries.where((MapEntry<String, dynamic> element) => element.value is! Map))
         entry.key: entry.value,
-      for (MapEntry<String, dynamic> value
+      for (final MapEntry<String, dynamic> value
           in apiConfig.entries.where((MapEntry<String, dynamic> element) => element.key == env && element.value is Map))
         ...value.value,
     };
