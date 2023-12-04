@@ -257,6 +257,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
   }
 
   String get protoApiOutDir {
+    if (_config.containsKey('protos_output_dir')) {
+      return _config['protos_output_dir'].replaceAll('/', path.separator);
+    }
+
     if (isDartBackend) {
       return path.join(apiDir, 'lib', 'generated', 'protos');
     } else {

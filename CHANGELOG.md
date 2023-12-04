@@ -1,3 +1,7 @@
+## 0.10.5
+
+* specify proto output directory with `protos_output_dir` 
+ 
 ## 0.10.4
 
 * fix to camel case when settings env 
