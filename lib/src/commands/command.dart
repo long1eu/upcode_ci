@@ -43,6 +43,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
       if (argResults.wasParsed('flutter_dir')) 'flutter_dir': argResults['flutter_dir'],
       if (argResults.wasParsed('private_dir')) 'private_dir': argResults['private_dir'],
       if (argResults.wasParsed('api_dir')) 'api_dir': argResults['api_dir'],
+      if (argResults.wasParsed('api_dockerfile_dir')) 'api_dockerfile_dir': argResults['api_dockerfile_dir'],
       if (argResults.wasParsed('google_project_location'))
         'google_project_location': argResults['google_project_location'],
     };
@@ -242,6 +243,8 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   // api
   String get apiDir => _config['api_dir'].replaceAll('/', path.separator);
+
+  String get apiDockerfileDir => _config['api_dockerfile_dir'] ?? apiDir;
 
   String get projectLocation => _config['google_project_location'];
 
