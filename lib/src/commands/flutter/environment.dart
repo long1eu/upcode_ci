@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:path/path.dart';
-import 'package:strings/strings.dart' show camelize;
+import 'package:strings/strings.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
 import 'package:upcode_ci/src/commands/flutter/application_mixin.dart';
@@ -98,7 +98,7 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
     }
 
     for (final String key in flutterApiConfig.keys) {
-      String variableName = camelize(key);
+      String variableName = key.toCamelCase();
       final List<String> parts = variableName.split('');
       variableName = <String>[parts.first.toLowerCase(), ...parts.skip(1)].join('');
       buffer.writeln('  static const String $variableName = \'${flutterApiConfig[key]}\';');

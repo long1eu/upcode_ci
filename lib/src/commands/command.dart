@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:args/src/arg_results.dart';
 import 'package:googleapis/androidpublisher/v3.dart';
+import 'package:googleapis/firebaseappdistribution/v1.dart' hide ProjectsResource;
 import 'package:googleapis/firestore/v1.dart' hide ProjectsResource;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis_beta/firebase/v1beta1.dart';
@@ -161,6 +162,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
     return FirestoreApi(googleClient!).projects.databases;
   }
 
+  FirebaseAppDistributionApi get appDistribution {
+    return FirebaseAppDistributionApi(googleClient!);
+  }
+
   InappproductsResource get inappproducts {
     return AndroidPublisherApi(googleClient!).inappproducts;
   }
@@ -260,6 +265,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
   }
 
   String get protoApiOutDir {
+    if (_config.containsKey('protos_output_dir')) {
+      return _config['protos_output_dir'].replaceAll('/', path.separator);
+    }
+
     if (isDartBackend) {
       return path.join(apiDir, 'lib', 'generated', 'protos');
     } else {

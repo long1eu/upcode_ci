@@ -4,10 +4,11 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:pub_semver/src/version.dart';
-import 'package:strings/strings.dart' show camelize;
+import 'package:strings/strings.dart' show StringEx;
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
 import 'package:upcode_ci/src/commands/version_mixin.dart';
@@ -15,6 +16,7 @@ import 'package:upcode_ci/src/commands/version_mixin.dart';
 class ApiEnvironmentCommand extends UpcodeCommand {
   ApiEnvironmentCommand(Map<String, dynamic> config) : super(config) {
     addSubcommand(ApiSetEnvironmentCommand(config));
+    addSubcommand(ApiCreateEnvironmentCommand(config));
   }
 
   @override
@@ -89,7 +91,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
     }
 
     for (final String key in config.keys) {
-      String variableName = camelize(key);
+      String variableName = key.toCamelCase();
       final List<String> parts = variableName.split('');
       variableName = <String>[parts.first.toLowerCase(), ...parts.skip(1)].join('');
       buffer.writeln('  static const String $variableName = \'${config[key]}\';');
@@ -143,5 +145,53 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   FutureOr<dynamic> run() async {
     await execute(_updateConfig, 'Saving server configuration');
     await execute(_updateApiConfiguration, 'Saving api configuration in api_config.yaml');
+  }
+}
+
+class ApiCreateEnvironmentCommand extends UpcodeCommand with EnvironmentMixin {
+  ApiCreateEnvironmentCommand(Map<String, dynamic> config) : super(config) {
+    argParser.addOption('env', abbr: 'e');
+  }
+
+  @override
+  final String name = 'create';
+
+  @override
+  final String description = 'create a new environment';
+
+  Future<void> _deployInitialGateway() async {
+    final String envSuffix = env == 'prod' ? '' : '-${env!.replaceAll('_', '-')}';
+    final String apiVersion = apiApiConfig['api_version'] == null ? '' : '-${apiApiConfig['api_version']}';
+    final String gatewayName = '$gatewayBaseName$apiVersion$envSuffix';
+
+    await runCommand(
+      'gcloud',
+      <String>[
+        'run',
+        'deploy',
+        gatewayName,
+        '--image',
+        'gcr.io/endpoints-release/endpoints-runtime-serverless:2',
+        '--allow-unauthenticated',
+        '--platform',
+        'managed',
+        '--region',
+        projectLocation,
+        '--format',
+        'json',
+        '--project',
+        projectId,
+        '-q'
+      ],
+      workingDirectory: pwd,
+    );
+  }
+
+  @override
+  FutureOr<dynamic> run() async {
+    await execute(_deployInitialGateway, 'Deploy the initial gateway');
+    stdout.writeln('Add the "cloud_run_hash" to your upcode.yaml file under the "api" root and press Enter/Return.');
+    stdin.readLineSync();
+    await runner!.run(<String>['api:deploy', 'all', '--env', rawEnv]);
   }
 }
