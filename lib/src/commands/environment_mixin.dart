@@ -164,7 +164,6 @@ mixin EnvironmentMixin on UpcodeCommand {
       );
     }).toList();
   }
-
 }
 
 class ApiImage {

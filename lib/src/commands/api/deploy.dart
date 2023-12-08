@@ -311,7 +311,7 @@ class ServiceDeployCommand extends UpcodeCommand with EnvironmentMixin {
           '--project',
           projectId,
         ],
-        workingDirectory: apiDir,
+        workingDirectory: apiDockerfileDir,
       ),
       'Build service image',
     );
