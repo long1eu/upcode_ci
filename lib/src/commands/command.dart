@@ -24,6 +24,11 @@ abstract class UpcodeCommand extends Command<dynamic> {
       ..addOption('flutter_dir', help: 'Specify the flutter module you want to run this command into.')
       ..addOption('private_dir', help: 'Specify the private module.')
       ..addOption('api_dir', help: 'Specify the api module.')
+      ..addOption(
+        'api_dockerfile_dir',
+        help:
+            'Specify the Dockerfile location used by the api module. This can be useful when the file needs to be outside of api_dir.',
+      )
       ..addOption('protos_dir', help: 'Specify the protos module.')
       ..addOption('google_project_location', help: 'Specify the project location.');
   }
