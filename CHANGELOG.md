@@ -1,7 +1,53 @@
-## 0.9.4
+## 0.10.6
 
 Added a new optional 'api_dockerfile_dir'
 that can be used to specify the Dockerfile's location it for cases when it need's to be other that 'api_dir'.
+
+## 0.10.5
+
+* specify proto output directory with `protos_output_dir`
+
+## 0.10.4
+
+* fix to camel case when settings env
+
+## 0.10.3
+
+* fix reading wrong project id
+
+## 0.10.2
+
+* fix missing command
+
+* ## 0.10.1
+
+* fix save release notes
+
+## 0.10.0
+
+**Breaking change info:**
+
+This deprecates `upcode flutter:fad` but it doesn't remove it yet. Make sure to update to `upcode fad upload`.
+
+Updates:
+* implement firebase app distribution in dart. This allows us not to install the node-js firebase-tools package.
+* add `update fad deleteOldReleases` where you can delete old releases on firebase app distribution.
+* update dependencies
+
+## 0.10.1+beta
+
+* fix wrong dependency on http
+
+## 0.10.0+beta
+
+**Breaking change info:**
+
+This deprecates `upcode flutter:fad` but it doesn't remove it yet. Make sure to update to `upcode fad upload`.
+
+Updates:
+* implement firebase app distribution in dart. This allows us not to install the node-js firebase-tools package.
+* add `update fad deleteOldReleases` where you can delete old releases on firebase app distribution.
+* update dependencies
 
 ## 0.9.3
 
