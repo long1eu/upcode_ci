@@ -1,3 +1,8 @@
+## 0.9.4
+
+Added a new optional 'api_dockerfile_dir'
+that can be used to specify the Dockerfile's location it for cases when it need's to be other that 'api_dir'.
+
 ## 0.9.3
 
 Reverts 0.9.1 from using the current fvm installation since it doesn't work with CI/CD.
