@@ -1,7 +1,7 @@
 ## 0.10.6
 
 Added a new optional 'api_dockerfile_dir'
-that can be used to specify the Dockerfile's location it for cases when it need's to be other that 'api_dir'.
+that can be used to specify the Dockerfile's location for cases when it needs to be other that within the 'api_dir'.
 
 ## 0.10.5
 
