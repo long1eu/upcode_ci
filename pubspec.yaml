@@ -1,6 +1,6 @@
 name: upcode_ci
 description: A collection of tools used by Upcode team
-version: 0.10.5
+version: 0.10.6
 repository: https://github.com/long1eu/upcode_ci
 executables:
   upcode:
