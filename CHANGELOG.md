@@ -1,3 +1,8 @@
+## 0.10.7
+
+Add `dart:format` and `dart:analyze` same as `flutter` command.
+You can also pass a list of `module` to specify the folders you want to check.
+
 ## 0.10.6
 
 Added a new optional 'api_dockerfile_dir'

@@ -6,6 +6,8 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:upcode_ci/src/commands/api/index.dart';
+import 'package:upcode_ci/src/commands/dart/analyze.dart';
+import 'package:upcode_ci/src/commands/dart/format.dart';
 import 'package:upcode_ci/src/commands/environment.dart';
 import 'package:upcode_ci/src/commands/flutter/analyze.dart';
 import 'package:upcode_ci/src/commands/flutter/fastlane.dart';
@@ -31,6 +33,8 @@ void main(List<String> args) {
   };
 
   CommandRunner<dynamic>('upcode', 'Provides useful automation tools')
+    ..addCommand(DartFormatCommand(config))
+    ..addCommand(DartAnalyzeCommand(config))
     ..addCommand(FlutterGenerateCommand(config))
     ..addCommand(FlutterI18nCommand(config))
     ..addCommand(FlutterBuildRunnerCommand(config))
