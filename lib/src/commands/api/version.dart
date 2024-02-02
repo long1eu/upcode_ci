@@ -3,6 +3,7 @@
 // on 10/05/2020
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -55,7 +56,9 @@ class ApiIncrementVersionCommand extends UpcodeCommand with VersionMixin {
 
 class ApiReadVersionCommand extends UpcodeCommand with VersionMixin {
   ApiReadVersionCommand(Map<String, dynamic> config) : super(config) {
-    argParser.addOption('type', abbr: 't', defaultsTo: 'api', help: 'The name used to save the version at.');
+    argParser
+      ..addOption('env', abbr: 'e')
+      ..addOption('type', abbr: 't', defaultsTo: 'api', help: 'The name used to save the version at.');
   }
 
   @override
@@ -69,22 +72,66 @@ class ApiReadVersionCommand extends UpcodeCommand with VersionMixin {
   ApiVersionCommand get parent => super.parent! as ApiVersionCommand;
 
   @override
-  String get versionType => argResults!['type'];
-
-  Future<void> _updateConfig() async {
-    Version? version;
-    try {
-      version = await getVersion();
-    } catch (_) {}
-    String data = join(apiDir, 'src', 'config.ts').readAsStringSync();
-    if (version != null) {
-      data = data.replaceFirstMapped(RegExp('  version: "(.+?)"'), (_) => '$version');
+  String get versionType {
+    if (argResults!.wasParsed('type')) {
+      return argResults!['type'];
+    } else {
+      return super.versionType;
     }
-    join(apiDir, 'src', 'config.ts').writeAsStringSync(data);
+  }
+
+  void _updateYaml(String versionName, int versionCode) {
+    final String pubspecFile = join(apiDir, 'pubspec.yaml');
+
+    String yaml = pubspecFile.readAsStringSync();
+    if (!yaml.contains('versionCode')) {
+      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: $versionName\nversionCode: $versionCode');
+    } else {
+      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: $versionName');
+      yaml = yaml.replaceAllMapped(RegExp('versionCode: (.+)'), (_) => 'versionCode: $versionCode');
+    }
+    pubspecFile.writeAsStringSync(yaml);
+  }
+
+  void _updateFlutter(String versionName, int versionCode) {
+    final StringBuffer buffer = StringBuffer()
+      ..writeln('import \'package:pub_semver/pub_semver.dart\' as semver;')
+      ..writeln()
+      ..writeln('// ignore: avoid_classes_with_only_static_members')
+      ..writeln('class Version {')
+      ..writeln('  static const String versionName = \'$versionName\';')
+      ..writeln('  static const int versionCode = $versionCode;')
+      ..writeln('  static final semver.Version version = semver.Version.parse(versionName);')
+      ..writeln('}')
+      ..writeln('');
+
+    join(flutterGeneratedDir, 'version.dart').writeAsStringSync(buffer.toString());
   }
 
   @override
   FutureOr<void> run() async {
-    await execute(_updateConfig, 'Updating config.ts');
+    Version? version;
+    try {
+      version = await getVersion();
+    } catch (_) {}
+
+    if (isDartBackend) {
+      if (version == null) {
+        stderr.writeln('You need to specify a version.');
+        exit(1);
+      }
+      if (!dartApiGeneratedDir.dir.existsSync()) {
+        dartApiGeneratedDir.dir.createSync(recursive: true);
+      }
+
+      await execute(() => _updateYaml(version!.versionName, version.versionCode), 'Update pubspec.yaml file');
+      await execute(() => _updateFlutter(version!.versionName, version.versionCode), 'Updating version.dart');
+    } else {
+      String data = join(apiDir, 'src', 'config.ts').readAsStringSync();
+      if (version != null) {
+        data = data.replaceFirstMapped(RegExp('  version: "(.+?)"'), (_) => '$version');
+      }
+      join(apiDir, 'src', 'config.ts').writeAsStringSync(data);
+    }
   }
 }

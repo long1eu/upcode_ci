@@ -1,3 +1,7 @@
+## 0.10.8
+
+Add version for dart api.
+
 ## 0.10.7
 
 Add `dart:format` and `dart:analyze` same as `flutter` command.
