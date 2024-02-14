@@ -1,3 +1,7 @@
+## 0.10.9
+
+Support Web only apps.
+
 ## 0.10.8
 
 Add version for dart api.

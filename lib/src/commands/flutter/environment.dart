@@ -89,12 +89,14 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
     }
 
     if (config.containsKey('google_project_id')) {
-      final String androidKey = await execute(androidApiKey, 'Reading Android API key');
-      final String iosKey = await execute(iosApiKey, 'Reading iOS API key');
-
-      buffer //
-        ..writeln('  static const String androidApiKey = \'$androidKey\';')
-        ..writeln('  static const String iosApiKey = \'$iosKey\';');
+      if (androidDir.existsSync()) {
+        final String androidKey = await execute(androidApiKey, 'Reading Android API key');
+        buffer.writeln('  static const String androidApiKey = \'$androidKey\';');
+      }
+      if (iosDir.existsSync()) {
+        final String iosKey = await execute(iosApiKey, 'Reading iOS API key');
+        buffer.writeln('  static const String iosApiKey = \'$iosKey\';');
+      }
     }
 
     for (final String key in flutterApiConfig.keys) {
@@ -112,10 +114,15 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
 
   @override
   FutureOr<dynamic> run() async {
+    // todo: do we really need the android and ios api keys?
     if (config.containsKey('google_project_id')) {
       await initFirebase();
-      await execute(saveAndroidConfig, 'Saving Firebase configuration for Android');
-      await execute(saveIosConfig, 'Saving Firebase configuration for iOS');
+      if (androidDir.existsSync()) {
+        await execute(saveAndroidConfig, 'Saving Firebase configuration for Android');
+      }
+      if (iosDir.existsSync()) {
+        await execute(saveIosConfig, 'Saving Firebase configuration for iOS');
+      }
     }
 
     if (argResults!.wasParsed('env')) {
