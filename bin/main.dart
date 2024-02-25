@@ -16,6 +16,7 @@ import 'package:upcode_ci/src/commands/flutter/firebase_app_distribution_old.dar
 import 'package:upcode_ci/src/commands/flutter/format.dart';
 import 'package:upcode_ci/src/commands/flutter/save_release_notes.dart';
 import 'package:upcode_ci/src/commands/flutter/test.dart';
+import 'package:upcode_ci/src/commands/google/google.dart';
 import 'package:upcode_ci/src/commands/index.dart';
 import 'package:upcode_ci/src/commands/protos.dart';
 import 'package:yaml/yaml.dart';
@@ -52,5 +53,6 @@ void main(List<String> args) {
     ..addCommand(ApiEnvironmentCommand(config))
     ..addCommand(ApiVersionCommand(config))
     ..addCommand(EnvironmentCommand(config))
+    ..addCommand(GoogleCommand(config))
     ..run(args);
 }
