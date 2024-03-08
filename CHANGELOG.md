@@ -1,3 +1,7 @@
+## 0.10.11
+
+Drop the use of legacy firebase database key. 
+
 ## 0.10.10
 
 Add option to send fcm notification using a json file that contains a message. https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#Message 

@@ -171,6 +171,7 @@ class FlutterReadVersionCommand extends UpcodeCommand with VersionMixin, Environ
       ]),
       'Setting version $data',
     );
+    exit(0);
   }
 }
 

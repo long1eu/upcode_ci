@@ -24,11 +24,6 @@ class SaveReleaseNotesCommand extends UpcodeCommand with VersionMixin {
   @override
   final String description = 'Save the latest commits as release notes';
 
-  Uri get databaseUrl {
-    final String databaseKey = join(privateDir, 'firebase_database.key').readAsStringSync();
-    return Uri.parse('https://$projectId.firebaseio.com/.json?auth=$databaseKey');
-  }
-
   Future<String> _getCommit() async {
     final Response data = await get(await getDatabaseUrl());
     final Map<dynamic, dynamic> values = jsonDecode(data.body) ?? <dynamic, dynamic>{};

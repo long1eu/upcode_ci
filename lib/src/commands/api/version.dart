@@ -133,5 +133,6 @@ class ApiReadVersionCommand extends UpcodeCommand with VersionMixin {
       }
       join(apiDir, 'src', 'config.ts').writeAsStringSync(data);
     }
+    exit(0);
   }
 }

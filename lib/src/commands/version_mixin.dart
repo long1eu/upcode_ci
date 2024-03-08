@@ -21,15 +21,13 @@ mixin VersionMixin on UpcodeCommand {
     await initFirebase();
     final FirebaseProject result = await projectsApi.get(firebaseProjectName);
     final String baseUrl = result.resources!.realtimeDatabaseInstance!;
-    print(result.resources!.toJson());
-    final String databaseKey = join(privateDir, 'firebase_database.key').readAsStringSync();
-
-    final Uri url = Uri.parse('https://$baseUrl.firebaseio.com/$versionType/.json?auth=$databaseKey');
+    final String token = googleClient!.credentials.accessToken.data;
+    final Uri url = Uri.parse('https://$baseUrl.firebaseio.com/$versionType/.json?access_token=$token');
     final Response response = await get(url);
     if (response.statusCode == 404) {
       final String? correctUrl = jsonDecode(response.body)['correctUrl'] as String?;
       if (correctUrl != null) {
-        return Uri.parse('$correctUrl/$versionType/.json?auth=$databaseKey');
+        return Uri.parse('$correctUrl/$versionType/.json?access_token=$token');
       }
     }
     return url;
@@ -37,7 +35,6 @@ mixin VersionMixin on UpcodeCommand {
 
   Future<Map<String, dynamic>> getRawVersion() async {
     final Uri url = await getDatabaseUrl();
-    print(url);
     final Response data = await get(url);
     if (data.statusCode < 200 || data.statusCode >= 300) {
       throw StateError(data.body);
