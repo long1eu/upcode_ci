@@ -213,10 +213,10 @@ class FlutterSetVersionCommand extends UpcodeCommand with VersionMixin, Environm
 
     String yaml = pubspecFile.readAsStringSync();
     if (!yaml.contains('versionCode')) {
-      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: $versionName\nversionCode: $versionCode');
+      yaml = yaml.replaceFirst(RegExp('version: (.+)'), 'version: $versionName\nversionCode: $versionCode');
     } else {
-      yaml = yaml.replaceAllMapped(RegExp('version: (.+)'), (_) => 'version: $versionName');
-      yaml = yaml.replaceAllMapped(RegExp('versionCode: (.+)'), (_) => 'versionCode: $versionCode');
+      yaml = yaml.replaceFirst(RegExp('version: (.+)'), 'version: $versionName');
+      yaml = yaml.replaceFirst(RegExp('versionCode: (.+)'), 'versionCode: $versionCode');
     }
     pubspecFile.writeAsStringSync(yaml);
   }

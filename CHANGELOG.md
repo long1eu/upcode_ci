@@ -1,3 +1,7 @@
+## 0.10.12
+
+Only replace the first iteration of version. 
+
 ## 0.10.11
 
 Drop the use of legacy firebase database key. 
