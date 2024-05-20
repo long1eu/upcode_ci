@@ -20,6 +20,11 @@ class DartFormatCommand extends UpcodeCommand {
       ..addMultiOption(
         'module',
         help: 'Select what modules you want to check.',
+      )
+      ..addFlag(
+        'chunks',
+        defaultsTo: false,
+        help: 'If true, the command will run in chunks to avoid command length limits (mainly on Windows).',
       );
   }
 
@@ -32,6 +37,7 @@ class DartFormatCommand extends UpcodeCommand {
   @override
   FutureOr<dynamic> run() async {
     final bool modify = argResults!['modify'] ?? false;
+    final bool chunks = argResults!['chunks'] ?? false;
 
     List<String> modules;
     if (argResults!.wasParsed('module')) {
@@ -48,13 +54,24 @@ class DartFormatCommand extends UpcodeCommand {
           .where(fileFilter)
           .toList();
 
-      final List<List<String>> chunks = _chunkList(files, 100); // Adjust the chunk size as needed
+      if (chunks) {
+        final List<List<String>> fileChunks = _chunkList(files, 100);
 
-      for (final List<String> chunk in chunks) {
+        for (final List<String> chunk in fileChunks) {
+          await execute(
+                () => runCommand(
+              'dart',
+              <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...chunk],
+              workingDirectory: module,
+            ),
+            description,
+          );
+        }
+      } else {
         await execute(
               () => runCommand(
             'dart',
-            <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...chunk],
+            <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...files],
             workingDirectory: module,
           ),
           description,
