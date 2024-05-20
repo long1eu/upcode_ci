@@ -44,7 +44,7 @@ class DartFormatCommand extends UpcodeCommand {
           .where(fileFilter)
           .toList();
 
-      final List<List<String>> chunks = _chunkList(files, 50); // Adjust the chunk size as needed
+      final List<List<String>> chunks = _chunkList(files, 100); // Adjust the chunk size as needed
 
       for (final List<String> chunk in chunks) {
         await execute(
