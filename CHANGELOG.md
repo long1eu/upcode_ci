@@ -1,3 +1,7 @@
+## 0.10.13
+
+Added a flag to upcode dart:format so the command could run on Windows without command line length errors.
+
 ## 0.10.12
 
 Only replace the first iteration of version. 
