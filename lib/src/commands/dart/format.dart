@@ -1,7 +1,3 @@
-// File created by
-// Lung Razvan <long1eu>
-// on 09/05/2020
-
 import 'dart:async';
 import 'dart:io';
 
@@ -15,7 +11,7 @@ class DartFormatCommand extends UpcodeCommand {
         'modify',
         defaultsTo: false,
         help:
-            'If false it will only check if there are changes that need to be done and exists with non 0 code if so. If true it will format the code.',
+        'If false it will only check if there are changes that need to be done and exists with non 0 code if so. If true it will format the code.',
       )
       ..addMultiOption(
         'module',
@@ -48,14 +44,26 @@ class DartFormatCommand extends UpcodeCommand {
           .where(fileFilter)
           .toList();
 
-      await execute(
-        () => runCommand(
-          'dart',
-          <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...files],
-          workingDirectory: module,
-        ),
-        description,
-      );
+      final List<List<String>> chunks = _chunkList(files, 200); // Adjust the chunk size as needed
+
+      for (final List<String> chunk in chunks) {
+        await execute(
+              () => runCommand(
+            'dart',
+            <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...chunk],
+            workingDirectory: module,
+          ),
+          description,
+        );
+      }
     }
+  }
+
+  List<List<String>> _chunkList(List<String> list, int chunkSize) {
+    final List<List<String>> chunks = [];
+    for (int i = 0; i < list.length; i += chunkSize) {
+      chunks.add(list.sublist(i, i + chunkSize > list.length ? list.length : i + chunkSize));
+    }
+    return chunks;
   }
 }
