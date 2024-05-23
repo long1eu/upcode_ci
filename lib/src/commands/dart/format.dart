@@ -37,7 +37,11 @@ class DartFormatCommand extends UpcodeCommand {
   @override
   FutureOr<dynamic> run() async {
     final bool modify = argResults!['modify'] ?? false;
-    final bool chunks = argResults!['chunks'] ?? false;
+    bool chunks = argResults!['chunks'] ?? false;
+
+    if (Platform.isWindows) {
+      chunks = true;
+    }
 
     List<String> modules;
     if (argResults!.wasParsed('module')) {
@@ -81,7 +85,7 @@ class DartFormatCommand extends UpcodeCommand {
   }
 
   List<List<String>> _chunkList(List<String> list, int chunkSize) {
-    final List<List<String>> chunks = [];
+    final List<List<String>> chunks = <List<String>>[];
     for (int i = 0; i < list.length; i += chunkSize) {
       chunks.add(list.sublist(i, i + chunkSize > list.length ? list.length : i + chunkSize));
     }
