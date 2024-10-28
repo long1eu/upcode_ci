@@ -1,3 +1,7 @@
+## 0.10.13
+
+Split files when formating on windows.
+
 ## 0.10.12
 
 Only replace the first iteration of version. 

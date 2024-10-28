@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:path/path.dart' as path;
 import 'package:upcode_ci/src/commands/command.dart';
 
@@ -36,14 +37,20 @@ class FlutterFormatCommand extends UpcodeCommand {
           .where(fileFilter)
           .toList();
 
-      await execute(
-        () => runCommand(
-          'dart',
-          <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...files],
-          workingDirectory: module,
-        ),
-        description,
-      );
+      final List<List<String>> elements = Platform.isWindows //
+          ? files.slices(100).toList()
+          : <List<String>>[files];
+
+      for (final List<String> items in elements) {
+        await execute(
+          () => runCommand(
+            'dart',
+            <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...items],
+            workingDirectory: module,
+          ),
+          description,
+        );
+      }
     }
   }
 }
