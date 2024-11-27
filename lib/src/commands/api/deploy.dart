@@ -120,7 +120,15 @@ class GcloudBuildImageCommand extends UpcodeCommand {
         version = tag.length > version.length ? tag : version;
       }
 
-      tags.add(Version.parse(version));
+      Version? parsedVersion;
+      try {
+        parsedVersion = Version.parse(version);
+      } on FormatException catch (_) {
+        // No-op
+      }
+      if (parsedVersion != null) {
+        tags.add(parsedVersion);
+      }
     }
 
     tags.sort();
