@@ -115,19 +115,25 @@ class GcloudBuildImageCommand extends UpcodeCommand {
 
     final List<Version> tags = <Version>[];
     for (final dynamic item in jsonDecode(output.stdout) as List<dynamic>) {
-      String version = '';
-      for (final String tag in List<String>.from(item['tags'])) {
-        version = tag.length > version.length ? tag : version;
-      }
+      final List<Version> innerTags = List<String>.from(item['tags'])
+          .map((String tagValue) {
+            try {
+              return Version.parse(tagValue);
+            } catch (_) {
+              return null;
+            }
+          })
+          .nonNulls
+          .toList();
 
-      Version? parsedVersion;
-      try {
-        parsedVersion = Version.parse(version);
-      } on FormatException catch (_) {
-        // No-op
+      Version? mostRecentVersion;
+      if (innerTags.isNotEmpty) {
+        mostRecentVersion = innerTags.reduce((Version previous, Version current) {
+          return previous > current ? previous : current;
+        });
       }
-      if (parsedVersion != null) {
-        tags.add(parsedVersion);
+      if (mostRecentVersion != null) {
+        tags.add(mostRecentVersion);
       }
     }
 

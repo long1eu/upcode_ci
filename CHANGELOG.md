@@ -1,5 +1,9 @@
 ## 0.10.14
 
+Ensure the most recent valid tag version is selected when parsing the tag versions. 
+
+## 0.10.14
+
 Handle cases when the tag version cannot be parsed
 
 ## 0.10.13
