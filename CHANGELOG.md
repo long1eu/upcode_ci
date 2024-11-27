@@ -1,4 +1,4 @@
-## 0.10.14
+## 0.10.15
 
 Ensure the most recent valid tag version is selected when parsing the tag versions. 
 
