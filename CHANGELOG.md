@@ -1,3 +1,7 @@
+## 0.10.14
+
+Handle cases when the tag version cannot be parsed
+
 ## 0.10.13
 
 Split files when formating on windows.
