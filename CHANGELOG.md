@@ -1,3 +1,7 @@
+## 0.10.17
+
+Add the [module] parameter back for the `upcode dart:format` and `upcode flutter:format` commands.
+
 ## 0.10.16+1
 
 Split files when formating on windows(dart).
