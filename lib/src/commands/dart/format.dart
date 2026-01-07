@@ -11,12 +11,17 @@ import 'package:upcode_ci/src/commands/command.dart';
 
 class DartFormatCommand extends UpcodeCommand {
   DartFormatCommand(Map<String, dynamic> config) : super(config) {
-    argParser.addFlag(
-      'modify',
-      defaultsTo: false,
-      help:
-          'If false it will only check if there are changes that need to be done and exists with non 0 code if so. If true it will format the code.',
-    );
+    argParser
+      ..addFlag(
+        'modify',
+        defaultsTo: false,
+        help:
+            'If false it will only check if there are changes that need to be done and exists with non 0 code if so. If true it will format the code.',
+      )
+      ..addMultiOption(
+        'module',
+        help: 'Select what modules you want to check.',
+      );
   }
 
   @override
