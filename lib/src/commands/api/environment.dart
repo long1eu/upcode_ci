@@ -132,6 +132,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
           return <String>[
             '    - selector: "${image.selector}"',
             '      address: grpcs://$host',
+            '      deadline: ${image.deadlineSeconds}',
           ];
         },
       ).expand((List<String> image) => image),
