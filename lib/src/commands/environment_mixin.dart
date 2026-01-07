@@ -91,7 +91,7 @@ mixin EnvironmentMixin on UpcodeCommand {
 
   String get gatewayBaseName => apiApiConfig['gateway_base_name'];
 
-  double get gatewayDeadlineSeconds => apiApiConfig['gateway_deadline_seconds'] ?? 60.0;
+  double get gatewayDeadlineSeconds => apiApiConfig['gateway_deadline_seconds'] ?? 15.0;
 
   String get apiBaseDisplayName => apiApiConfig['api_base_display_name'];
 
