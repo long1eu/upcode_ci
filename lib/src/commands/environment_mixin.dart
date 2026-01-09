@@ -91,6 +91,8 @@ mixin EnvironmentMixin on UpcodeCommand {
 
   String get gatewayBaseName => apiApiConfig['gateway_base_name'];
 
+  double get gatewayDeadlineSeconds => apiApiConfig['gateway_deadline_seconds'] ?? 15.0;
+
   String get apiBaseDisplayName => apiApiConfig['api_base_display_name'];
 
   String get cloudRunHash => apiApiConfig['cloud_run_hash'];
@@ -149,13 +151,14 @@ mixin EnvironmentMixin on UpcodeCommand {
         List<Map<dynamic, dynamic>>.from(apiConfig['images'] ?? <Map<String, dynamic>>[]);
 
     if (images.isEmpty) {
-      images.add(<String, dynamic>{'selector': '*', 'name': ''});
+      images.add(<String, dynamic>{'selector': '*', 'name': '', 'deadline_seconds': gatewayDeadlineSeconds});
     }
 
     return images.map((Map<dynamic, dynamic> image) {
       return ApiImage(
         name: image['name'] ?? '',
         selector: image['selector'] ?? '*',
+        deadlineSeconds: double.tryParse('deadline_seconds') ?? gatewayDeadlineSeconds,
         cloudSqlInstances: image['cloudsql_instances'] //
                 ?.map((dynamic name) => '$name')
                 ?.cast<String>()
@@ -167,9 +170,15 @@ mixin EnvironmentMixin on UpcodeCommand {
 }
 
 class ApiImage {
-  ApiImage({required this.name, required this.selector, required this.cloudSqlInstances});
+  ApiImage({
+    required this.name,
+    required this.selector,
+    required this.deadlineSeconds,
+    required this.cloudSqlInstances,
+  });
 
   final String name;
   final String selector;
+  final double deadlineSeconds;
   final List<String> cloudSqlInstances;
 }
