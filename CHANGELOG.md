@@ -1,3 +1,8 @@
+## 0.10.18
+
+Add `--path` option to `upcode fad upload` to override the default apk/ipa
+location. Supports uploading aab bundles by passing a `.aab` path.
+
 ## 0.10.17
 
 Add support for backend deadline parameter ([Reference](https://docs.cloud.google.com/endpoints/docs/openapi/openapi-extensions#deadline))

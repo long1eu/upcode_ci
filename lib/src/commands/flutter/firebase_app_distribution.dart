@@ -54,6 +54,12 @@ class FadUploadCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
         'token',
         abbr: 't',
         help: 'Provide the firebase token you want to use',
+      )
+      ..addOption(
+        'path',
+        help: 'The path to the apk, aab or ipa file to upload. '
+            'The file type is inferred from the extension. '
+            'If not provided, the default build output path will be used (apk for android, ipa for ios).',
       );
   }
 
@@ -64,6 +70,10 @@ class FadUploadCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
   final String description = 'Distribute app on Firebase App Distribution';
 
   String _getPath() {
+    if (argResults!.wasParsed('path')) {
+      return argResults!['path'] as String;
+    }
+
     if (argResults!['platform'] == 'android') {
       String fileName;
       if (argResults!.wasParsed('env')) {
