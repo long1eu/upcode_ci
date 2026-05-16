@@ -1,3 +1,9 @@
+## 0.10.19
+
+Route `flutter` and `dart` invocations through `fvm` when the target project is
+fvm-configured (has a `.fvmrc` file or `.fvm/` directory) and the `fvm` binary
+is on `PATH`. Falls back to the bare executable otherwise.
+
 ## 0.10.18
 
 Add `--path` option to `upcode fad upload` to override the default apk/ipa
