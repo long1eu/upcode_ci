@@ -377,6 +377,53 @@ bool fileFilter(String it) =>
     !it.endsWith('.config.dart') &&
     !it.endsWith('.test_coverage.dart');
 
+bool? _fvmOnPathCache;
+
+/// Whether the `fvm` binary is resolvable on `PATH`.
+///
+/// The result never changes during a process run, so it is cached.
+bool fvmOnPath() => _fvmOnPathCache ??= _detectFvmOnPath();
+
+bool _detectFvmOnPath() {
+  final String? pathVar = Platform.environment['PATH'];
+  if (pathVar == null) {
+    return false;
+  }
+  final List<String> names =
+      Platform.isWindows ? <String>['fvm.bat', 'fvm.cmd', 'fvm.exe', 'fvm'] : <String>['fvm'];
+  for (final String entry in pathVar.split(Platform.isWindows ? ';' : ':')) {
+    if (entry.isEmpty) {
+      continue;
+    }
+    for (final String name in names) {
+      if (File(path.join(entry, name)).existsSync()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/// Whether [dir] (or any ancestor) belongs to an fvm-configured project.
+///
+/// A project is fvm-configured when it contains a `.fvmrc` file or a `.fvm/`
+/// directory. The check walks up to the filesystem root so it also matches a
+/// sub-package nested inside an fvm-configured repository.
+bool isFvmConfigured(String dir) {
+  String current = path.absolute(dir);
+  while (true) {
+    if (File(path.join(current, '.fvmrc')).existsSync() ||
+        Directory(path.join(current, '.fvm')).existsSync()) {
+      return true;
+    }
+    final String parent = path.dirname(current);
+    if (parent == current) {
+      return false;
+    }
+    current = parent;
+  }
+}
+
 Future<void> runCommand(
   String executable,
   List<String> arguments, {
@@ -394,6 +441,13 @@ Future<void> runCommand(
       (outputMode == OutputMode.capture) == (output != null),
       'The output parameter must be non-null with and only with '
       'OutputMode.capture');
+
+  if ((executable == 'flutter' || executable == 'dart') &&
+      fvmOnPath() &&
+      isFvmConfigured(workingDirectory)) {
+    arguments = <String>[executable, ...arguments];
+    executable = 'fvm';
+  }
 
   final String commandDescription = '${path.relative(executable, from: workingDirectory)} ${arguments.join(' ')}';
   final String relativeWorkingDir = path.relative(workingDirectory);
