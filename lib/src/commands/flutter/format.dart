@@ -49,9 +49,7 @@ class FlutterFormatCommand extends UpcodeCommand {
           .where(fileFilter)
           .toList();
 
-      final List<List<String>> elements = Platform.isWindows //
-          ? files.slices(100).toList()
-          : <List<String>>[files];
+      final List<List<String>> elements = files.slices(100).toList();
 
       for (final List<String> items in elements) {
         await execute(

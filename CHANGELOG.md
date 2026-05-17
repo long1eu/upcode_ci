@@ -1,3 +1,8 @@
+## 0.10.20
+
+Batch files into chunks of 100 when running `dart format` on all platforms.
+Previously the batching applied only on Windows.
+
 ## 0.10.19
 
 Route `flutter` and `dart` invocations through `fvm` when the target project is
