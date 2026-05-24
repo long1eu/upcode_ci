@@ -309,6 +309,11 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
         splitCommas: false,
         defaultsTo: <String>['model=MediumPhone.arm,version=34,locale=en,orientation=portrait'],
       )
+      ..addOption(
+        'results-bucket',
+        help: 'GCS bucket for raw test artifacts (logs, video, screenshots). '
+            'Defaults to the App Distribution results bucket.',
+      )
       ..addOption('timeout', help: 'Minutes to wait for results before giving up.', defaultsTo: '15');
   }
 
@@ -426,7 +431,8 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
         'steps': steps.map<Map<String, dynamic>>((dynamic step) {
           final dynamic success = step['successCriteria'] ?? step['finalScreenAssertion'];
           return <String, dynamic>{
-            'goal': step['goal'].toString(),
+            if (step['goal'] != null) 'goal': step['goal'].toString(),
+            if (step['assertion'] != null) 'assertion': step['assertion'].toString(),
             if (step['hint'] != null) 'hint': step['hint'].toString(),
             if (success != null) 'successCriteria': success.toString(),
           };
@@ -441,11 +447,13 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     required List<Map<String, dynamic>> devices,
     Map<String, dynamic>? loginCredential,
   }) async {
+    final String? resultsBucket = argResults!['results-bucket'] as String?;
     final Map<String, dynamic> requestBody = <String, dynamic>{
       'deviceExecutions': devices.map((Map<String, dynamic> device) => <String, dynamic>{'device': device}).toList(),
       if (loginCredential != null) 'loginCredential': loginCredential,
       'aiInstructions': <String, dynamic>{'steps': test['steps']},
       if (test['displayName'] != null) 'displayName': test['displayName'],
+      if (resultsBucket != null) 'resultsBucket': resultsBucket,
     };
     final http.Response response = await _testClient.post(
       Uri.parse('$_host/v1alpha/$releaseName/tests'),

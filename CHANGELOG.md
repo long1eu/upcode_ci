@@ -1,3 +1,9 @@
+## 0.10.22
+
+`upcode fad ai-test`: add `--results-bucket` to store raw test artifacts (logs,
+video, screenshots) in a specific GCS bucket, and support an `assertion` field
+on test steps — a verification-only step alongside `goal`/`successCriteria`.
+
 ## 0.10.21
 
 Add `upcode fad ai-test`: run Firebase App Distribution AI tests on a freshly
