@@ -1,3 +1,14 @@
+## 0.10.21
+
+Add `upcode fad ai-test`: run Firebase App Distribution AI tests on a freshly
+uploaded, non-distributed release. The release is uploaded with the service
+account, then the App Testing agent (`createReleaseTest`) is driven with a user
+token (`--token`, or the `FIREBASE_TOKEN` env var) — the release-tests API does
+not accept the service account. The agent logs in automatically from
+`--username`/`--password`/`--password-file` and runs the natural-language steps
+from a YAML file (`--tests`). Polls every device execution to completion and
+exits non-zero if any test fails.
+
 ## 0.10.20
 
 Batch files into chunks of 100 when running `dart format` on all platforms.
