@@ -1,3 +1,9 @@
+## 0.10.23
+
+`upcode fad ai-test`: add `--credentials`, a JSON file with TEST_EMAIL and
+TEST_PASSWORD (e.g. the dart-define `test_credentials.json`) used for automatic
+login, as an alternative to `--username`/`--password`.
+
 ## 0.10.22
 
 `upcode fad ai-test`: add `--results-bucket` to store raw test artifacts (logs,

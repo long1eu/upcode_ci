@@ -295,6 +295,11 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
       ..addOption('password', help: 'Password used for automatic login. Prefer --password-file.')
       ..addOption('password-file', help: 'Path to a plain-text file containing the login password.')
       ..addOption(
+        'credentials',
+        help: 'Path to a JSON file with TEST_EMAIL/TEST_PASSWORD for automatic login '
+            '(e.g. the dart-define test_credentials.json). Explicit --username/--password take precedence.',
+      )
+      ..addOption(
         'token',
         abbr: 't',
         help: 'A Firebase user refresh token (from `firebase login:ci`). Required: the App Testing '
@@ -393,10 +398,16 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
   }
 
   Map<String, dynamic>? _loginCredential() {
-    final String? username = argResults!['username'] as String?;
+    String? username = argResults!['username'] as String?;
     String? password = argResults!['password'] as String?;
     if (argResults!.wasParsed('password-file')) {
       password = File(argResults!['password-file'] as String).readAsStringSync().trim();
+    }
+    if (argResults!.wasParsed('credentials')) {
+      final Map<String, dynamic> credentials =
+          jsonDecode(File(argResults!['credentials'] as String).readAsStringSync()) as Map<String, dynamic>;
+      username ??= credentials['TEST_EMAIL'] as String?;
+      password ??= credentials['TEST_PASSWORD'] as String?;
     }
     if (username == null && password == null) {
       return null;
