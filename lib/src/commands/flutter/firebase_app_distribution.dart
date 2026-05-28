@@ -466,12 +466,29 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
       if (test['displayName'] != null) 'displayName': test['displayName'],
       if (resultsBucket != null) 'resultsBucket': resultsBucket,
     };
-    final http.Response response = await _testClient.post(
-      Uri.parse('$_host/v1alpha/$releaseName/tests'),
-      headers: <String, String>{'content-type': 'application/json'},
-      body: jsonEncode(requestBody),
-    );
-    if (response.statusCode >= 400) {
+    final Uri uri = Uri.parse('$_host/v1alpha/$releaseName/tests');
+    final String encodedBody = jsonEncode(requestBody);
+
+    const int maxAttempts = 5;
+    http.Response? response;
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      response = await _testClient.post(
+        uri,
+        headers: <String, String>{'content-type': 'application/json'},
+        body: encodedBody,
+      );
+      if (response.statusCode < 500) {
+        break;
+      }
+      if (attempt < maxAttempts) {
+        final Duration backoff = Duration(seconds: 1 << (attempt - 1));
+        stderr.writeln(
+            '  createReleaseTest got ${response.statusCode}, retrying in ${backoff.inSeconds}s (attempt $attempt/$maxAttempts)');
+        await Future<void>.delayed(backoff);
+      }
+    }
+
+    if (response!.statusCode >= 400) {
       final Map<String, dynamic> redacted = <String, dynamic>{
         ...requestBody,
         if (requestBody.containsKey('loginCredential')) 'loginCredential': '<redacted>',

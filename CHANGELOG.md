@@ -1,3 +1,9 @@
+## 0.10.26
+
+`upcode fad ai-test`: retry the App Testing `createReleaseTest` call with
+exponential backoff (1s/2s/4s/8s, up to 5 attempts) on HTTP 5xx responses, so
+transient Firebase server errors don't fail otherwise-healthy runs.
+
 ## 0.10.25
 
 `upcode testlab run`: add `test_lab.network_devices`, a separate device list
