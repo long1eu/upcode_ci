@@ -1,3 +1,12 @@
+## 0.10.25
+
+`upcode testlab run`: add `test_lab.network_devices`, a separate device list
+used for network-profile matrices. Firebase Test Lab only honors network
+profiles (traffic shaping) on physical devices, so the default `devices` list
+typically stays on a virtual device for speed while `network_devices` points
+at a physical model (e.g. `akita` / Pixel 8a). Falls back to `devices` when
+absent, preserving previous behavior.
+
 ## 0.10.24
 
 Add `upcode testlab run`: run the Patrol instrumentation APKs on Firebase Test

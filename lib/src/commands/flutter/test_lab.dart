@@ -94,20 +94,36 @@ class TestLabRunCommand extends UpcodeCommand with EnvironmentMixin {
     return '${int.parse(value) * 60}s';
   }
 
+  testing.AndroidDevice _device(Map<dynamic, dynamic> raw) {
+    final Map<String, dynamic> data = Map<String, dynamic>.from(raw);
+    return testing.AndroidDevice(
+      androidModelId: data['model'] as String,
+      androidVersionId: '${data['version']}',
+      locale: (data['locale'] ?? 'en') as String,
+      orientation: (data['orientation'] ?? 'portrait') as String,
+    );
+  }
+
+  List<testing.AndroidDevice> _devicesFromKey(String key) {
+    final List<dynamic> list = _testLab[key] as List<dynamic>? ?? const <dynamic>[];
+    return list.map((dynamic raw) => _device(raw as Map<dynamic, dynamic>)).toList();
+  }
+
   List<testing.AndroidDevice> get _devices {
-    final List<dynamic> devices = _testLab['devices'] as List<dynamic>? ?? const <dynamic>[];
+    final List<testing.AndroidDevice> devices = _devicesFromKey('devices');
     if (devices.isEmpty) {
       throw StateError('Add at least one device under `test_lab.devices` in upcode.yaml.');
     }
-    return devices.map((dynamic device) {
-      final Map<String, dynamic> data = Map<String, dynamic>.from(device as Map<dynamic, dynamic>);
-      return testing.AndroidDevice(
-        androidModelId: data['model'] as String,
-        androidVersionId: '${data['version']}',
-        locale: (data['locale'] ?? 'en') as String,
-        orientation: (data['orientation'] ?? 'portrait') as String,
-      );
-    }).toList();
+    return devices;
+  }
+
+  /// Devices for network-profile matrices. Network profiles (traffic shaping)
+  /// are only honored on **physical** devices, so `test_lab.network_devices`
+  /// must list physical model ids (e.g. `akita`). Falls back to `_devices` if
+  /// absent.
+  List<testing.AndroidDevice> get _networkDevices {
+    final List<testing.AndroidDevice> devices = _devicesFromKey('network_devices');
+    return devices.isEmpty ? _devices : devices;
   }
 
   Future<String> _upload(storage.StorageApi api, String bucket, String objectName, File file) async {
@@ -125,6 +141,7 @@ class TestLabRunCommand extends UpcodeCommand with EnvironmentMixin {
     required String appApkGcs,
     required String testApkGcs,
     required String resultsGcs,
+    required List<testing.AndroidDevice> devices,
     String? networkProfile,
   }) {
     return testing.TestMatrix(
@@ -146,7 +163,7 @@ class TestLabRunCommand extends UpcodeCommand with EnvironmentMixin {
         ),
       ),
       environmentMatrix: testing.EnvironmentMatrix(
-        androidDeviceList: testing.AndroidDeviceList(androidDevices: _devices),
+        androidDeviceList: testing.AndroidDeviceList(androidDevices: devices),
       ),
       resultStorage: testing.ResultStorage(
         googleCloudStorage: testing.GoogleCloudStorage(gcsPath: resultsGcs),
@@ -197,7 +214,12 @@ class TestLabRunCommand extends UpcodeCommand with EnvironmentMixin {
     final List<({String label, testing.TestMatrix request})> jobs = <({String label, testing.TestMatrix request})>[
       (
         label: 'default',
-        request: _matrix(appApkGcs: apks[0], testApkGcs: apks[1], resultsGcs: '$resultsBase/default'),
+        request: _matrix(
+          appApkGcs: apks[0],
+          testApkGcs: apks[1],
+          resultsGcs: '$resultsBase/default',
+          devices: _devices,
+        ),
       ),
       for (final String profile in _networkProfiles)
         (
@@ -206,6 +228,7 @@ class TestLabRunCommand extends UpcodeCommand with EnvironmentMixin {
             appApkGcs: apks[0],
             testApkGcs: apks[1],
             resultsGcs: '$resultsBase/$profile',
+            devices: _networkDevices,
             networkProfile: profile,
           ),
         ),
