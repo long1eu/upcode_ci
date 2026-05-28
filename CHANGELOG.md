@@ -1,3 +1,14 @@
+## 0.10.24
+
+Add `upcode testlab run`: run the Patrol instrumentation APKs on Firebase Test
+Lab via the Cloud Testing API. Uploads the app and androidTest APKs to the
+results bucket, then creates one test matrix for the default network plus one
+per configured network profile, all concurrently, and waits for every matrix —
+exiting non-zero if any does not report a `SUCCESS` outcome. Devices, network
+profiles and matrix options come from the `test_lab` section of `upcode.yaml`
+(with per-environment overrides); APK paths are inferred from the flavor
+(`--env`).
+
 ## 0.10.23
 
 `upcode fad ai-test`: add `--credentials`, a JSON file with TEST_EMAIL and

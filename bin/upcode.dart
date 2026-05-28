@@ -16,6 +16,7 @@ import 'package:upcode_ci/src/commands/flutter/firebase_app_distribution_old.dar
 import 'package:upcode_ci/src/commands/flutter/format.dart';
 import 'package:upcode_ci/src/commands/flutter/save_release_notes.dart';
 import 'package:upcode_ci/src/commands/flutter/test.dart';
+import 'package:upcode_ci/src/commands/flutter/test_lab.dart';
 import 'package:upcode_ci/src/commands/google/google.dart';
 import 'package:upcode_ci/src/commands/index.dart';
 import 'package:upcode_ci/src/commands/protos.dart';
@@ -47,6 +48,7 @@ void main(List<String> args) {
     ..addCommand(FlutterAnalyzeCommand(config))
     ..addCommand(FlutterFormatCommand(config))
     ..addCommand(FlutterTestCommand(config))
+    ..addCommand(TestLabCommand(config))
     ..addCommand(SaveReleaseNotesCommand(config))
     ..addCommand(ProtosCommand(config))
     ..addCommand(ApiDeployCommand(config))
