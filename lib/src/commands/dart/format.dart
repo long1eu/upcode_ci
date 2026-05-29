@@ -16,7 +16,7 @@ class DartFormatCommand extends UpcodeCommand {
         'modify',
         defaultsTo: false,
         help:
-            'If false it will only check if there are changes that need to be done and exists with non 0 code if so. If true it will format the code.',
+            'If false it will only check if there are changes that need to be done and exits with non 0 code if so. If true it will format the code.',
       )
       ..addMultiOption(
         'module',
@@ -28,7 +28,7 @@ class DartFormatCommand extends UpcodeCommand {
   final String name = 'dart:format';
 
   @override
-  final String description = 'Runs the dart formatter and exists with a non 0 code when there are issues.';
+  final String description = 'Runs the dart formatter and exits with a non 0 code when there are issues.';
 
   @override
   FutureOr<dynamic> run() async {

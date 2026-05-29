@@ -1,5 +1,12 @@
+export 'analyze.dart';
 export 'build_runner.dart';
 export 'environment.dart';
+export 'fastlane.dart';
+export 'firebase_app_distribution.dart';
+export 'format.dart';
 export 'generate.dart';
 export 'i18n.dart';
+export 'save_release_notes.dart';
+export 'test.dart';
+export 'test_lab.dart';
 export 'version.dart';

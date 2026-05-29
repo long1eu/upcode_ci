@@ -12,7 +12,7 @@ class FlutterAnalyzeCommand extends UpcodeCommand {
   final String name = 'flutter:analyze';
 
   @override
-  final String description = 'Runs the dart analyzer and exists with a non 0 code when there are issues.';
+  final String description = 'Runs the flutter analyzer and exits with a non 0 code when there are issues.';
 
   @override
   FutureOr<dynamic> run() async {
@@ -23,7 +23,7 @@ class FlutterAnalyzeCommand extends UpcodeCommand {
           <String>['analyze'],
           workingDirectory: module,
         ),
-        'Runs the dart analyzer in $module.',
+        'Runs the flutter analyzer in $module.',
       );
     }
   }

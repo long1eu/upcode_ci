@@ -16,7 +16,7 @@ class EnvironmentCommand extends UpcodeCommand with EnvironmentMixin {
   final String name = 'environment';
 
   @override
-  final String description = 'Adds or remove environments';
+  final String description = 'Manage the active environment.';
 }
 
 class SetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin {

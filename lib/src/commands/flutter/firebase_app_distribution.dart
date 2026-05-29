@@ -35,7 +35,7 @@ class FadUploadCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
       ..addOption(
         'env',
         abbr: 'e',
-        help: 'The name of the environment you want to create',
+        help: 'The name of the environment to use.',
       )
       ..addOption(
         'platform',
@@ -220,7 +220,7 @@ class FadDeleteOldReleaseCommand extends UpcodeCommand with EnvironmentMixin, Ap
       ..addOption(
         'env',
         abbr: 'e',
-        help: 'The name of the environment you want to create',
+        help: 'The name of the environment to use.',
       )
       ..addOption(
         'platform',
@@ -240,7 +240,7 @@ class FadDeleteOldReleaseCommand extends UpcodeCommand with EnvironmentMixin, Ap
   final String name = 'deleteOldReleases';
 
   @override
-  final String description = 'Distribute app on Firebase App Distribution';
+  final String description = 'Delete old Firebase App Distribution releases, keeping the most recent --limit.';
 
   @override
   FutureOr<dynamic> run() async {

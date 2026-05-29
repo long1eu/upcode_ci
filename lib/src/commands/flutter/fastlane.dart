@@ -15,7 +15,7 @@ class FlutterFastlaneDeployCommand extends UpcodeCommand with EnvironmentMixin, 
       ..addOption(
         'env',
         abbr: 'e',
-        help: 'The name of the environment you want to create',
+        help: 'The name of the environment to use.',
       )
       ..addOption(
         'platform',

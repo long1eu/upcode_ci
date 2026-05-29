@@ -18,7 +18,7 @@ class DartAnalyzeCommand extends UpcodeCommand {
   final String name = 'dart:analyze';
 
   @override
-  final String description = 'Runs the dart analyzer and exists with a non 0 code when there are issues.';
+  final String description = 'Runs the dart analyzer and exits with a non 0 code when there are issues.';
 
   @override
   FutureOr<dynamic> run() async {

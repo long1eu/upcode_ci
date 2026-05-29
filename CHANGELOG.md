@@ -1,3 +1,20 @@
+## 0.10.28
+
+Remove the deprecated `upcode flutter:fad` command; use `upcode fad upload`
+instead. It has printed a removal warning since 0.10.x.
+
+Consistency cleanup. Remove the stale `bin/main.dart` entrypoint, which
+duplicated `bin/upcode.dart` but had drifted (it was missing the `testlab`
+command); the published executable already points at `bin/upcode.dart`. Fix
+copy-paste leftovers in command metadata: the `fad deleteOldReleases`
+description (was the `upload` text), the `environment` group description, the
+misleading `--env` help ("environment you want to create" on commands that only
+select an existing one), and the `flutter:analyze` description/log (it runs
+`flutter analyze`, not the dart analyzer). Correct the "exists"/"exits" typo
+across the format/analyze descriptions. Complete the command barrel files
+(`flutter`, `dart`, `google`, top-level `index.dart`) and import commands
+through the barrel in the entrypoint.
+
 ## 0.10.27
 
 Mark `upcode flutter:fad` as deprecated in its `--help` description so the

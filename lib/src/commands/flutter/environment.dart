@@ -35,7 +35,7 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
     argParser.addOption(
       'env',
       abbr: 'e',
-      help: 'The name of the environment you want to create',
+      help: 'The name of the environment to use.',
     );
   }
 
