@@ -1,3 +1,11 @@
+## 0.10.27
+
+Mark `upcode flutter:fad` as deprecated in its `--help` description so the
+existing runtime warning is also visible when listing commands; use
+`upcode fad upload` instead. Rename the `fcm send` command's implementation
+class to `FcmSendCommand` (it was misnamed `DartAnalyzeCommand`) and correct
+the `fcm` group description.
+
 ## 0.10.26
 
 `upcode fad ai-test`: retry the App Testing `createReleaseTest` call with

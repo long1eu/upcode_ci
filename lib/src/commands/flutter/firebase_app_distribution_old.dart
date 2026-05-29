@@ -49,7 +49,7 @@ class FlutterFirebaseAppDistributionCommand extends UpcodeCommand with Environme
   final String name = 'flutter:fad';
 
   @override
-  final String description = 'Distribute app on Firebase App Distribution';
+  final String description = 'Deprecated: use `fad upload`. Distribute app on Firebase App Distribution.';
 
   @override
   FutureOr<dynamic> run() async {

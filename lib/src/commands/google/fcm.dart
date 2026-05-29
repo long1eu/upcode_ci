@@ -11,18 +11,18 @@ import 'package:upcode_ci/src/commands/command.dart';
 
 class FcmCommand extends UpcodeCommand {
   FcmCommand(Map<String, dynamic> config) : super(config) {
-    addSubcommand(DartAnalyzeCommand(config));
+    addSubcommand(FcmSendCommand(config));
   }
 
   @override
   final String name = 'fcm';
 
   @override
-  final String description = 'Adds or remove environments';
+  final String description = 'Firebase Cloud Messaging operations.';
 }
 
-class DartAnalyzeCommand extends UpcodeCommand {
-  DartAnalyzeCommand(Map<String, dynamic> config) : super(config) {
+class FcmSendCommand extends UpcodeCommand {
+  FcmSendCommand(Map<String, dynamic> config) : super(config) {
     argParser.addOption(
       'message',
       abbr: 'm',
