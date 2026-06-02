@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:googleapis/firebaseappdistribution/v1.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
@@ -351,8 +352,6 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
   final String description =
       'Run Firebase App Distribution AI tests (with auto-login) on a freshly uploaded, non-distributed release';
 
-  static const String _host = 'https://firebaseappdistribution.googleapis.com';
-
   /// The firebase-tools OAuth client (id/secret) used to refresh the user token
   /// supplied via --token (issued by `firebase login:ci`). Read from upcode.yaml
   /// so the credentials aren't baked into the package source.
@@ -395,7 +394,7 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     final String appName = Uri.encodeFull('projects/$projectId/apps/$appId');
 
     final File file = File(path);
-    final Uri uri = Uri.parse('$_host/upload/v1/$appName/releases:upload');
+    final Uri uri = Uri.parse('https://firebaseappdistribution.googleapis.com/upload/v1/$appName/releases:upload');
 
     final HttpClientRequest request = await HttpClient().postUrl(uri);
     request
@@ -420,7 +419,7 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     return release.name!;
   }
 
-  Map<String, dynamic>? _loginCredential() {
+  fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential? _loginCredential() {
     String? username = argResults!['username'] as String?;
     String? password = argResults!['password'] as String?;
     if (argResults!.wasParsed('password-file')) {
@@ -435,112 +434,102 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     if (username == null && password == null) {
       return null;
     }
-    return <String, dynamic>{
-      if (username != null) 'username': username,
-      if (password != null) 'password': password,
-    };
+    return fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential(username: username, password: password);
   }
 
-  Map<String, dynamic> _device(String spec) {
+  fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice _device(String spec) {
     final Map<String, String> parts = <String, String>{
       for (final String pair in spec.split(',')) pair.split('=').first.trim(): pair.split('=').last.trim(),
     };
-    return <String, dynamic>{
-      'model': parts['model'],
-      'version': parts['version'],
-      'locale': parts['locale'] ?? 'en',
-      'orientation': parts['orientation'] ?? 'portrait',
-    };
+    return fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice(
+      model: parts['model'],
+      version: parts['version'],
+      locale: parts['locale'] ?? 'en',
+      orientation: parts['orientation'] ?? 'portrait',
+    );
   }
 
-  /// Reads the YAML into plain (JSON-encodable) test maps with `aiInstructions`
-  /// steps. Accepts both `successCriteria` and `finalScreenAssertion` keys.
-  List<Map<String, dynamic>> _readTests() {
+  /// Reads the YAML into (displayName, steps) records. Accepts both
+  /// `successCriteria` and `finalScreenAssertion` for the success text.
+  List<({String? displayName, List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps})> _readTests() {
     final dynamic doc = loadYaml(File(argResults!['tests'] as String).readAsStringSync());
     final List<dynamic> tests = (doc['tests'] as List<dynamic>?) ?? <dynamic>[];
-    return tests.map<Map<String, dynamic>>((dynamic test) {
+    return tests.map((dynamic test) {
       final List<dynamic> steps = (test['steps'] as List<dynamic>?) ?? <dynamic>[];
-      return <String, dynamic>{
-        'displayName': (test['displayName'] ?? test['name'])?.toString(),
-        'steps': steps.map<Map<String, dynamic>>((dynamic step) {
+      return (
+        displayName: (test['displayName'] ?? test['name'])?.toString(),
+        steps: steps.map((dynamic step) {
           final dynamic success = step['successCriteria'] ?? step['finalScreenAssertion'];
-          return <String, dynamic>{
-            if (step['goal'] != null) 'goal': step['goal'].toString(),
-            if (step['assertion'] != null) 'assertion': step['assertion'].toString(),
-            if (step['hint'] != null) 'hint': step['hint'].toString(),
-            if (success != null) 'successCriteria': success.toString(),
-          };
+          return fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep(
+            goal: step['goal']?.toString(),
+            assertion: step['assertion']?.toString(),
+            hint: step['hint']?.toString(),
+            successCriteria: success?.toString(),
+          );
         }).toList(),
-      };
+      );
     }).toList();
   }
 
+  /// Creates one release test via the generated v1alpha client. Retries on
+  /// 5xx with exponential backoff (1s/2s/4s/8s, up to 5 attempts).
   Future<String> _createReleaseTest({
     required String releaseName,
-    required Map<String, dynamic> test,
-    required List<Map<String, dynamic>> devices,
-    Map<String, dynamic>? loginCredential,
+    required String? displayName,
+    required List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps,
+    required List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice> devices,
+    required fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential? loginCredential,
   }) async {
-    final String? resultsBucket = argResults!['results-bucket'] as String?;
-    final Map<String, dynamic> requestBody = <String, dynamic>{
-      'deviceExecutions': devices.map((Map<String, dynamic> device) => <String, dynamic>{'device': device}).toList(),
-      if (loginCredential != null) 'loginCredential': loginCredential,
-      'aiInstructions': <String, dynamic>{'steps': test['steps']},
-      if (test['displayName'] != null) 'displayName': test['displayName'],
-      if (resultsBucket != null) 'resultsBucket': resultsBucket,
-    };
-    final Uri uri = Uri.parse('$_host/v1alpha/$releaseName/tests');
-    final String encodedBody = jsonEncode(requestBody);
+    final fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest request = buildReleaseTest(
+      displayName: displayName,
+      steps: steps,
+      devices: devices,
+      loginCredential: loginCredential,
+      resultsBucket: argResults!['results-bucket'] as String?,
+    );
+    final fad_v1alpha.FirebaseAppDistributionApi api = fad_v1alpha.FirebaseAppDistributionApi(_testClient);
 
     const int maxAttempts = 5;
-    http.Response? response;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-      response = await _testClient.post(
-        uri,
-        headers: <String, String>{'content-type': 'application/json'},
-        body: encodedBody,
-      );
-      if (response.statusCode < 500) {
-        break;
-      }
-      if (attempt < maxAttempts) {
+      try {
+        final fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest created =
+            await api.projects.apps.releases.tests.create(request, releaseName);
+        return created.name!;
+      } on commons.DetailedApiRequestError catch (e) {
+        if ((e.status ?? 0) < 500 || attempt == maxAttempts) {
+          rethrow;
+        }
         final Duration backoff = Duration(seconds: 1 << (attempt - 1));
-        stderr.writeln(
-            '  createReleaseTest got ${response.statusCode}, retrying in ${backoff.inSeconds}s (attempt $attempt/$maxAttempts)');
+        stderr.writeln('  createReleaseTest got ${e.status}, retrying in '
+            '${backoff.inSeconds}s (attempt $attempt/$maxAttempts)');
         await Future<void>.delayed(backoff);
       }
     }
-
-    if (response!.statusCode >= 400) {
-      final Map<String, dynamic> redacted = <String, dynamic>{
-        ...requestBody,
-        if (requestBody.containsKey('loginCredential')) 'loginCredential': '<redacted>',
-      };
-      throw StateError('Failed to create release test: ${response.statusCode} ${response.body}\n'
-          'Request: ${jsonEncode(redacted)}');
-    }
-    return (jsonDecode(response.body) as Map<String, dynamic>)['name'] as String;
+    throw StateError('unreachable');
   }
 
   /// Polls a release test until every device execution is terminal. Returns
   /// whether they all passed.
   Future<bool> _awaitResult(String testName, Duration timeout) async {
+    final fad_v1alpha.FirebaseAppDistributionApi api = fad_v1alpha.FirebaseAppDistributionApi(_testClient);
     final DateTime deadline = DateTime.now().add(timeout);
     while (DateTime.now().isBefore(deadline)) {
-      final http.Response response = await _testClient.get(Uri.parse('$_host/v1alpha/$testName'));
-      final Map<String, dynamic> body = jsonDecode(response.body) as Map<String, dynamic>;
-      final List<dynamic> executions = (body['deviceExecutions'] as List<dynamic>?) ?? <dynamic>[];
+      final fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest test =
+          await api.projects.apps.releases.tests.get(testName);
+      final List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaDeviceExecution> executions =
+          test.deviceExecutions ?? <fad_v1alpha.GoogleFirebaseAppdistroV1alphaDeviceExecution>[];
 
       final bool done = executions.isNotEmpty &&
-          executions.every((dynamic e) => ((e['state'] as String?) ?? 'IN_PROGRESS') != 'IN_PROGRESS');
+          executions.every((fad_v1alpha.GoogleFirebaseAppdistroV1alphaDeviceExecution e) =>
+              (e.state ?? 'IN_PROGRESS') != 'IN_PROGRESS');
       if (done) {
         bool passed = true;
-        for (final dynamic execution in executions) {
-          final String state = (execution['state'] as String?) ?? 'INCONCLUSIVE';
+        for (final fad_v1alpha.GoogleFirebaseAppdistroV1alphaDeviceExecution execution in executions) {
+          final String state = execution.state ?? 'INCONCLUSIVE';
           if (state != 'PASSED') {
             passed = false;
-            final String reason = (execution['failedReason'] ?? execution['inconclusiveReason'] ?? '') as String;
-            stdout.writeln('  $red$state on ${execution['device']?['model']}: $reason$reset');
+            final String reason = execution.failedReason ?? execution.inconclusiveReason ?? '';
+            stdout.writeln('  $red$state on ${execution.device?.model}: $reason$reset');
           }
         }
         return passed;
@@ -569,22 +558,26 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     final String releaseName =
         await execute(() => _upload(path: path, appId: appId), 'Upload release (no distribution)');
 
-    final List<Map<String, dynamic>> tests = _readTests();
-    final List<Map<String, dynamic>> devices = (argResults!['device'] as List<String>).map(_device).toList();
-    final Map<String, dynamic>? loginCredential = _loginCredential();
+    final List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice> devices =
+        (argResults!['device'] as List<String>).map(_device).toList();
+    final fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential? loginCredential = _loginCredential();
+    final List<({String? displayName, List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps})> tests =
+        _readTests();
     final Duration timeout = Duration(minutes: int.tryParse(argResults!['timeout'] as String) ?? 15);
 
     final Map<String, String> started = <String, String>{};
     await execute(
       () async {
-        for (final Map<String, dynamic> test in tests) {
+        for (final ({String? displayName, List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps}) test
+            in tests) {
           final String testName = await _createReleaseTest(
             releaseName: releaseName,
-            test: test,
+            displayName: test.displayName,
+            steps: test.steps,
             devices: devices,
             loginCredential: loginCredential,
           );
-          started[(test['displayName'] as String?) ?? testName] = testName;
+          started[test.displayName ?? testName] = testName;
         }
       },
       'Start ${tests.length} AI test(s)',
