@@ -13,7 +13,29 @@ import 'package:path/path.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
 import 'package:upcode_ci/src/commands/flutter/application_mixin.dart';
+import 'package:upcode_ci/src/generated/firebaseappdistribution/v1alpha.dart' as fad_v1alpha;
 import 'package:yaml/yaml.dart';
+
+/// Builds a v1alpha [fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest]
+/// from already-parsed inputs. Pure: no I/O, so it is unit-tested directly.
+fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest buildReleaseTest({
+  required String? displayName,
+  required List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps,
+  required List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice> devices,
+  required fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential? loginCredential,
+  required String? resultsBucket,
+}) {
+  return fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest(
+    displayName: displayName,
+    resultsBucket: resultsBucket,
+    loginCredential: loginCredential,
+    aiInstructions: fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiInstructions(steps: steps),
+    deviceExecutions: devices
+        .map((fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice device) =>
+            fad_v1alpha.GoogleFirebaseAppdistroV1alphaDeviceExecution(device: device))
+        .toList(),
+  );
+}
 
 class FadCommand extends UpcodeCommand with EnvironmentMixin, ApplicationMixin {
   FadCommand(Map<String, dynamic> config) : super(config) {
