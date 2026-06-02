@@ -1,3 +1,10 @@
+## 0.10.29
+
+`upcode fad ai-test`: fall back to the service account for the App Testing
+release-tests API when no Firebase user token is provided. A user token
+(`--token` or `FIREBASE_TOKEN`) is still used when present; without one the
+command now uses the service-account client instead of failing.
+
 ## 0.10.28
 
 Remove the deprecated `upcode flutter:fad` command; use `upcode fad upload`
