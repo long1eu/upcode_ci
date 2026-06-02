@@ -302,9 +302,9 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
       ..addOption(
         'token',
         abbr: 't',
-        help: 'A Firebase user refresh token (from `firebase login:ci`). Required: the App Testing '
-            'release-tests API only accepts a user identity, not the service account. Falls back to '
-            r'the FIREBASE_TOKEN environment variable.',
+        help: 'A Firebase user refresh token (from `firebase login:ci`) for the App Testing '
+            'release-tests API. Falls back to the FIREBASE_TOKEN environment variable, then to '
+            'the service account when neither is set.',
       )
       ..addMultiOption(
         'device',
@@ -344,9 +344,10 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     return ClientId(id, secret);
   }
 
-  /// Auto-refreshing client for the user identity (the release-tests API
-  /// rejects the service account). The service-account [googleClient] is still
-  /// used for fetching the app and uploading the release.
+  /// Client used for the App Testing release-tests API. Prefers the user
+  /// identity from `--token`/`FIREBASE_TOKEN`, falling back to the
+  /// service-account [googleClient] (also used for fetching the app and
+  /// uploading the release) when no token is provided.
   late final AutoRefreshingAuthClient _testClient;
 
   AutoRefreshingAuthClient _userClient(String refreshToken) {
@@ -530,14 +531,16 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
 
   @override
   FutureOr<dynamic> run() async {
-    final String? refreshToken = (argResults!['token'] as String?) ?? Platform.environment['FIREBASE_TOKEN'];
-    if (refreshToken == null || refreshToken.isEmpty) {
-      throw StateError('A user token is required (--token or FIREBASE_TOKEN). The App Testing '
-          'release-tests API does not accept the service account. Generate one with `firebase login:ci`.');
-    }
-    _testClient = _userClient(refreshToken);
-
     await initFirebase();
+
+    final String? refreshToken = (argResults!['token'] as String?) ?? Platform.environment['FIREBASE_TOKEN'];
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      _testClient = _userClient(refreshToken);
+    } else {
+      stdout.writeln('No Firebase user token (--token / FIREBASE_TOKEN); '
+          'using the service account for the App Testing release-tests API.');
+      _testClient = googleClient!;
+    }
 
     final String path = _getPath();
     final String appId = await execute(() async => (await getAndroidApp()).appId!, 'Fetch application id');
