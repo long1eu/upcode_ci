@@ -342,7 +342,12 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
         help: 'GCS bucket for raw test artifacts (logs, video, screenshots). '
             'Defaults to the App Distribution results bucket.',
       )
-      ..addOption('timeout', help: 'Minutes to wait for results before giving up.', defaultsTo: '15');
+      ..addOption('timeout', help: 'Minutes to wait for results before giving up.', defaultsTo: '15')
+      ..addFlag(
+        'wait',
+        defaultsTo: false,
+        help: 'Wait until every test reaches a terminal state, ignoring --timeout.',
+      );
   }
 
   @override
@@ -509,11 +514,11 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
   }
 
   /// Polls a release test until every device execution is terminal. Returns
-  /// whether they all passed.
-  Future<bool> _awaitResult(String testName, Duration timeout) async {
+  /// whether they all passed. A null [timeout] waits indefinitely.
+  Future<bool> _awaitResult(String testName, Duration? timeout) async {
     final fad_v1alpha.FirebaseAppDistributionApi api = fad_v1alpha.FirebaseAppDistributionApi(_testClient);
-    final DateTime deadline = DateTime.now().add(timeout);
-    while (DateTime.now().isBefore(deadline)) {
+    final DateTime? deadline = timeout == null ? null : DateTime.now().add(timeout);
+    while (deadline == null || DateTime.now().isBefore(deadline)) {
       final fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest test =
           await api.projects.apps.releases.tests.get(testName);
       final List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaDeviceExecution> executions =
@@ -563,7 +568,9 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     final fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential? loginCredential = _loginCredential();
     final List<({String? displayName, List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps})> tests =
         _readTests();
-    final Duration timeout = Duration(minutes: int.tryParse(argResults!['timeout'] as String) ?? 15);
+    final bool wait = argResults!['wait'] as bool;
+    final Duration? timeout =
+        wait ? null : Duration(minutes: int.tryParse(argResults!['timeout'] as String) ?? 15);
 
     final Map<String, String> started = <String, String>{};
     await execute(

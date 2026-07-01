@@ -6,6 +6,9 @@ replacing the hand-rolled http calls. Adds the pinned discovery doc and a
 `tool/generate_clients.sh` regeneration script. Raises the minimum Dart SDK to
 3.8.0 (the generated client uses null-aware elements).
 
+Also adds `--wait` to `upcode fad ai-test`: poll until every test reaches a
+terminal state, ignoring `--timeout`.
+
 ## 0.10.29
 
 `upcode fad ai-test`: fall back to the service account for the App Testing
