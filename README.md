@@ -109,7 +109,10 @@ that gives completion, hover docs, and typo checks. Add this line at the top of
 ### Authentication
 
 Commands that talk to Google Cloud, Firebase, or the Play Store authenticate
-with a service account. Place its key at `<private_dir>/service_account.json`.
+with the project's service account. Place its key at
+`<private_dir>/service_account.json`. There is no fallback: if `private_dir` is
+not set or the key file is missing, the command fails with an error that names
+the missing setting or file.
 
 ### Global options
 

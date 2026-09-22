@@ -70,7 +70,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
     if (googleClient == null) {
       await execute(
         () async {
-          final String serviceAccount = join(privateDir, 'service_account.json').readAsStringSync();
+          final String serviceAccount = serviceAccountFile.readAsStringSync();
           googleClient = await clientViaServiceAccount(
             ServiceAccountCredentials.fromJson(serviceAccount),
             <String>[
@@ -190,7 +190,19 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   String get workspaceIdea => path.join(ideaDir, 'workspace.xml');
 
-  String get privateDir => _config['private_dir'].replaceAll('/', path.separator);
+  /// The project's service account key, `<private_dir>/service_account.json`.
+  /// Every Google API call authenticates with it, so a missing key fails the command.
+  String get serviceAccountFile {
+    final String? privateDir = _config['private_dir'];
+    if (privateDir == null) {
+      throw StateError('Set `private_dir` in upcode.yaml to the directory containing service_account.json.');
+    }
+    final String file = path.join(privateDir.replaceAll('/', path.separator), 'service_account.json');
+    if (!file.existsSync()) {
+      throw StateError('No service account key at $file. Every project needs <private_dir>/service_account.json.');
+    }
+    return file;
+  }
 
   // flutter
   String get flutterDir => _config['flutter_dir'].replaceAll('/', path.separator);

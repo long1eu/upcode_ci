@@ -8,8 +8,6 @@ import 'dart:io';
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:googleapis/firebaseappdistribution/v1.dart';
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
@@ -193,11 +191,6 @@ class FadUploadCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
         'release-notes',
         abbr: 'n',
         help: 'A file that contains the release notes for this version',
-      )
-      ..addOption(
-        'token',
-        abbr: 't',
-        help: 'Provide the firebase token you want to use',
       )
       ..addOption(
         'path',
@@ -422,6 +415,7 @@ class FadDeleteOldReleaseCommand extends UpcodeCommand with EnvironmentMixin, Ap
 /// becomes a release test driven by the App Testing agent
 /// (`POST {release}/tests`, v1alpha), with the agent logging in automatically
 /// from the supplied credentials before running the natural-language steps.
+/// Every API call authenticates with the project's service account.
 class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationMixin {
   FadAiTestCommand(Map<String, dynamic> config) : super(config) {
     argParser
@@ -438,13 +432,6 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
         'credentials',
         help: 'Path to a JSON file with TEST_EMAIL/TEST_PASSWORD for automatic login '
             '(e.g. the dart-define test_credentials.json). Explicit --username/--password take precedence.',
-      )
-      ..addOption(
-        'token',
-        abbr: 't',
-        help: 'A Firebase user refresh token (from `firebase login:ci`) for the App Testing '
-            'release-tests API. Falls back to the FIREBASE_TOKEN environment variable, then to '
-            'the service account when neither is set.',
       )
       ..addMultiOption(
         'device',
@@ -473,34 +460,6 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
   @override
   final String description =
       'Run Firebase App Distribution AI tests (with auto-login) on a freshly uploaded, non-distributed release';
-
-  /// The firebase-tools OAuth client (id/secret) used to refresh the user token
-  /// supplied via --token (issued by `firebase login:ci`). Read from upcode.yaml
-  /// so the credentials aren't baked into the package source.
-  ClientId get _firebaseToolsClient {
-    final String? id = config['firebase_client_id'] as String?;
-    final String? secret = config['firebase_client_secret'] as String?;
-    if (id == null || secret == null) {
-      throw StateError('Set `firebase_client_id` and `firebase_client_secret` in upcode.yaml. '
-          'These are the firebase-tools OAuth client used to refresh the `firebase login:ci` token.');
-    }
-    return ClientId(id, secret);
-  }
-
-  /// Client used for the App Testing release-tests API. Prefers the user
-  /// identity from `--token`/`FIREBASE_TOKEN`, falling back to the
-  /// service-account [googleClient] (also used for fetching the app and
-  /// uploading the release) when no token is provided.
-  late final AutoRefreshingAuthClient _testClient;
-
-  AutoRefreshingAuthClient _userClient(String refreshToken) {
-    final AccessCredentials credentials = AccessCredentials(
-      AccessToken('Bearer', '', DateTime.now().toUtc().subtract(const Duration(hours: 1))),
-      refreshToken,
-      <String>['https://www.googleapis.com/auth/cloud-platform'],
-    );
-    return autoRefreshingClient(_firebaseToolsClient, credentials, http.Client());
-  }
 
   String _getPath() {
     if (argResults!.wasParsed('path')) {
@@ -581,7 +540,7 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
       loginCredential: loginCredential,
       resultsBucket: resultsBucket,
     );
-    final fad_v1alpha.FirebaseAppDistributionApi api = fad_v1alpha.FirebaseAppDistributionApi(_testClient);
+    final fad_v1alpha.FirebaseAppDistributionApi api = fad_v1alpha.FirebaseAppDistributionApi(googleClient!);
 
     const int maxAttempts = 5;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -605,7 +564,7 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
   /// Polls a release test until every device execution is terminal. Returns
   /// whether they all passed. A null [timeout] waits indefinitely.
   Future<bool> _awaitResult(String testName, Duration? timeout) async {
-    final fad_v1alpha.FirebaseAppDistributionApi api = fad_v1alpha.FirebaseAppDistributionApi(_testClient);
+    final fad_v1alpha.FirebaseAppDistributionApi api = fad_v1alpha.FirebaseAppDistributionApi(googleClient!);
     final DateTime? deadline = timeout == null ? null : DateTime.now().add(timeout);
     while (deadline == null || DateTime.now().isBefore(deadline)) {
       final fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest test =
@@ -637,15 +596,6 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
   @override
   FutureOr<dynamic> run() async {
     await initFirebase();
-
-    final String? refreshToken = (argResults!['token'] as String?) ?? Platform.environment['FIREBASE_TOKEN'];
-    if (refreshToken != null && refreshToken.isNotEmpty) {
-      _testClient = _userClient(refreshToken);
-    } else {
-      stdout.writeln('No Firebase user token (--token / FIREBASE_TOKEN); '
-          'using the service account for the App Testing release-tests API.');
-      _testClient = googleClient!;
-    }
 
     final String path = _getPath();
     final String appId = await execute(() async => (await getAndroidApp()).appId!, 'Fetch application id');

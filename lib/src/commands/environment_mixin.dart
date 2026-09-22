@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 
-import 'package:path/path.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:yaml/yaml.dart';
 
@@ -100,7 +99,7 @@ mixin EnvironmentMixin on UpcodeCommand {
   String get cloudRunHash => apiApiConfig['cloud_run_hash'];
 
   String get serviceAccountEmail {
-    final Map<String, dynamic> serviceAccount = jsonDecode(join(privateDir, 'service_account.json').readAsStringSync());
+    final Map<String, dynamic> serviceAccount = jsonDecode(serviceAccountFile.readAsStringSync());
     return serviceAccount['client_email'];
   }
 

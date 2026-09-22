@@ -53,7 +53,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   }
 
   void _writeJsApiConfigFile(Version? version) {
-    final String key = base64Encode(utf8.encode(join(privateDir, 'service_account.json').readAsStringSync()));
+    final String key = base64Encode(utf8.encode(serviceAccountFile.readAsStringSync()));
     final Map<String, dynamic> config = <String, dynamic>{
       ...apiApiConfig,
       'key': key,
@@ -74,7 +74,7 @@ class ApiSetEnvironmentCommand extends UpcodeCommand with EnvironmentMixin, Vers
   }
 
   void _writeDartApiConfigFile(Version? version) {
-    final String key = base64Encode(utf8.encode(join(privateDir, 'service_account.json').readAsStringSync()));
+    final String key = base64Encode(utf8.encode(serviceAccountFile.readAsStringSync()));
     final Map<String, dynamic> config = <String, dynamic>{
       ...apiApiConfig,
       'key': key,
