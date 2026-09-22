@@ -276,16 +276,6 @@
       "description": "`ESPv2_ARGS` baked into the Cloud Endpoints proxy image by `api:deploy endpoints`. Defaults to a basic CORS preset that allows gRPC-Web headers.",
       "type": "string"
     },
-    "firebase_client_id": {
-      "description": "OAuth client id of firebase-tools, used by `fad ai-test` to refresh a `firebase login:ci` token. Required together with `firebase_client_secret` when a token is given.",
-      "type": "string",
-      "minLength": 1
-    },
-    "firebase_client_secret": {
-      "description": "OAuth client secret of firebase-tools. See `firebase_client_id`.",
-      "type": "string",
-      "minLength": 1
-    },
     "env": {
       "description": "Per-environment overrides. When a command runs with `--env <name>`, the matching entry's keys replace the top-level keys of the same name (maps are replaced, not merged).",
       "type": "object",
