@@ -1,0 +1,429 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/long1eu/upcode_ci/master/upcode.schema.json",
+  "title": "upcode.yaml",
+  "description": "Configuration for the `upcode` CLI (upcode_ci). Lives next to where `upcode` is run. Paths are relative to this file.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "google_project_id": {
+      "description": "Google Cloud / Firebase project id. Required by commands that talk to Google Cloud or Firebase.",
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "my-project"
+      ]
+    },
+    "google_project_location": {
+      "description": "Cloud project location. Required by the `api:*` commands. Overridden by `--google_project_location`.",
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "europe-west1"
+      ]
+    },
+    "base_application_id": {
+      "description": "Default application id. Used for Android and iOS unless `android_application_id` / `ios_application_id` are set.",
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "com.example.app"
+      ]
+    },
+    "android_application_id": {
+      "description": "Android application id. Defaults to `base_application_id`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "ios_application_id": {
+      "description": "iOS bundle id. Defaults to `base_application_id`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "private_dir": {
+      "description": "Directory containing `service_account.json`. Required by commands that authenticate with Google. Overridden by `--private_dir`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "flutter_dir": {
+      "description": "Path to the Flutter module. Used by most commands, and the default for `modules`. Overridden by `--flutter_dir`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "api_dir": {
+      "description": "Path to the backend module. Required by the `api:*` and `protos` commands. A Dart backend is detected by a `pubspec.yaml` inside it. Overridden by `--api_dir`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "api_dockerfile_dir": {
+      "description": "Dockerfile location when it lives outside `api_dir`. Defaults to `api_dir`. Overridden by `--api_dockerfile_dir`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "protos_dir": {
+      "description": "Directory with the source `.proto` files. Defaults to `<flutter_dir>/res/protos`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "protos_output_dir": {
+      "description": "Output directory for the generated backend protobuf code. Defaults to `<api_dir>/lib/generated/protos` for a Dart backend, `<api_dir>/src/proto` otherwise.",
+      "type": "string",
+      "minLength": 1
+    },
+    "modules": {
+      "description": "Modules acted on by default. Defaults to `[flutter_dir]`.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "generated": {
+      "description": "Modules `flutter:buildrunner` runs `build_runner` in. Defaults to none.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "analyzed": {
+      "description": "Modules checked by `flutter:analyze` and `dart:analyze`. Defaults to `modules`.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "formatted": {
+      "description": "Modules checked by `flutter:format` and `dart:format`. Defaults to `modules`.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "tested": {
+      "description": "Modules tested by `flutter:test`. Defaults to `modules`.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "api": {
+      "description": "Backend settings used by the `api:*` and `environment` commands. Every scalar value is also written to the generated backend config (`config.ts` / `config.dart`). A nested map keyed by an environment name overrides the scalar values when that `--env` is used.",
+      "type": "object",
+      "properties": {
+        "api_base_name": {
+          "$ref": "#/definitions/apiValues/properties/api_base_name"
+        },
+        "api_base_display_name": {
+          "$ref": "#/definitions/apiValues/properties/api_base_display_name"
+        },
+        "api_version": {
+          "$ref": "#/definitions/apiValues/properties/api_version"
+        },
+        "gateway_base_name": {
+          "$ref": "#/definitions/apiValues/properties/gateway_base_name"
+        },
+        "gateway_deadline_seconds": {
+          "$ref": "#/definitions/apiValues/properties/gateway_deadline_seconds"
+        },
+        "cloud_run_hash": {
+          "$ref": "#/definitions/apiValues/properties/cloud_run_hash"
+        },
+        "min_instances": {
+          "description": "Minimum number of Cloud Run instances for the deployed services. Not affected by per-environment overrides. Defaults to 0.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "cloudsql_instances": {
+          "description": "Cloud SQL instance connection names attached to every image that does not set its own. Not affected by per-environment overrides.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "examples": [
+            [
+              "my-project:europe-west1:main"
+            ]
+          ]
+        },
+        "images": {
+          "description": "One Cloud Run service per image, each routed by an API gateway selector. Defaults to a single image with selector `*`. Not affected by per-environment overrides.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiImage"
+          }
+        }
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/scalar"
+          },
+          {
+            "$ref": "#/definitions/apiValues"
+          }
+        ]
+      }
+    },
+    "api_config": {
+      "description": "Values `flutter:environment set` writes as `static const String` fields of `Config` in `<flutter_dir>/lib/generated/config.dart`. Keys are converted to lowerCamelCase. A nested map keyed by an environment name overrides the scalar values when that `--env` is used.",
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/scalar"
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/definitions/scalar"
+            }
+          }
+        ]
+      }
+    },
+    "test_lab": {
+      "description": "Settings for `upcode testlab run` (Patrol instrumentation tests on Firebase Test Lab).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "devices"
+      ],
+      "properties": {
+        "devices": {
+          "description": "Devices for the default-network matrix.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/testLabDevice"
+          }
+        },
+        "network_devices": {
+          "description": "Devices for the network-profile matrices. Network profiles only apply to physical devices, so list physical model ids here. Defaults to `devices`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/testLabDevice"
+          }
+        },
+        "network_profiles": {
+          "description": "Test Lab network profile ids. One extra matrix is created per profile.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "examples": [
+            [
+              "LTE",
+              "GPRS"
+            ]
+          ]
+        },
+        "results_bucket": {
+          "description": "Cloud Storage bucket for the uploaded APKs and raw results. Overridden by `--results-bucket`; one of the two is required.",
+          "type": "string",
+          "minLength": 1
+        },
+        "timeout": {
+          "description": "Per-matrix timeout: `<n>s`, `<n>m`, or a bare number of minutes. Overridden by `--timeout`. Defaults to 15 minutes.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9]+[sm]?$"
+            }
+          ],
+          "default": 15,
+          "examples": [
+            15,
+            "15m",
+            "900s"
+          ]
+        },
+        "use_orchestrator": {
+          "description": "Run tests through Android Test Orchestrator.",
+          "type": "boolean",
+          "default": true
+        },
+        "clear_package_data": {
+          "description": "Clear app data between test cases (requires the orchestrator).",
+          "type": "boolean",
+          "default": true
+        },
+        "performance_metrics": {
+          "description": "Collect performance metrics.",
+          "type": "boolean",
+          "default": true
+        },
+        "flaky_test_attempts": {
+          "description": "How many times a failed test execution is re-attempted.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 1
+        }
+      }
+    },
+    "esp_args": {
+      "description": "`ESPv2_ARGS` baked into the Cloud Endpoints proxy image by `api:deploy endpoints`. Defaults to a basic CORS preset that allows gRPC-Web headers.",
+      "type": "string"
+    },
+    "firebase_client_id": {
+      "description": "OAuth client id of firebase-tools, used by `fad ai-test` to refresh a `firebase login:ci` token. Required together with `firebase_client_secret` when a token is given.",
+      "type": "string",
+      "minLength": 1
+    },
+    "firebase_client_secret": {
+      "description": "OAuth client secret of firebase-tools. See `firebase_client_id`.",
+      "type": "string",
+      "minLength": 1
+    },
+    "env": {
+      "description": "Per-environment overrides. When a command runs with `--env <name>`, the matching entry's keys replace the top-level keys of the same name (maps are replaced, not merged).",
+      "type": "object",
+      "propertyNames": {
+        "description": "The normalized environment name: lowercase, with `/` and `-` replaced by `_` (`--env feature/new-login` matches `feature_new_login`).",
+        "pattern": "^[^A-Z/-]+$"
+      },
+      "additionalProperties": {
+        "$ref": "#"
+      }
+    }
+  },
+  "definitions": {
+    "scalar": {
+      "type": [
+        "string",
+        "number",
+        "boolean"
+      ]
+    },
+    "apiValues": {
+      "type": "object",
+      "properties": {
+        "api_base_name": {
+          "description": "Base name of the Cloud Run backend services. Required by the `api:*` commands.",
+          "type": "string",
+          "minLength": 1
+        },
+        "api_base_display_name": {
+          "description": "Human-readable API name used in the `api_config.yaml` title.",
+          "type": "string",
+          "minLength": 1
+        },
+        "api_version": {
+          "description": "API version suffix appended to service and gateway names.",
+          "type": "string",
+          "minLength": 1,
+          "examples": [
+            "v1"
+          ]
+        },
+        "gateway_base_name": {
+          "description": "Base name of the Cloud Run API gateway service.",
+          "type": "string",
+          "minLength": 1
+        },
+        "gateway_deadline_seconds": {
+          "description": "Backend deadline for gateway routes. Defaults to 15.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 15.0
+        },
+        "cloud_run_hash": {
+          "description": "The hash in the project's Cloud Run URLs (`<service>-<hash>.a.run.app`). `api:environment create` asks for it after the first deploy.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/scalar"
+      }
+    },
+    "apiImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "description": "Suffix added to the service name for this image. Defaults to none.",
+          "type": "string",
+          "default": ""
+        },
+        "selector": {
+          "description": "API gateway rule selector routed to this image.",
+          "type": "string",
+          "minLength": 1,
+          "default": "*",
+          "examples": [
+            "*",
+            "my.package.MyService.*"
+          ]
+        },
+        "deadline_seconds": {
+          "description": "Backend deadline for this image's route. Defaults to `gateway_deadline_seconds`.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "cloudsql_instances": {
+          "description": "Cloud SQL instances for this image. Defaults to `api.cloudsql_instances`.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "testLabDevice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "version"
+      ],
+      "properties": {
+        "model": {
+          "description": "Test Lab Android model id (`gcloud firebase test android models list`).",
+          "type": "string",
+          "minLength": 1,
+          "examples": [
+            "MediumPhone.arm",
+            "akita"
+          ]
+        },
+        "version": {
+          "description": "Android API level.",
+          "type": [
+            "string",
+            "integer"
+          ],
+          "examples": [
+            34
+          ]
+        },
+        "locale": {
+          "description": "Device locale.",
+          "type": "string",
+          "minLength": 1,
+          "default": "en"
+        },
+        "orientation": {
+          "description": "Device orientation.",
+          "enum": [
+            "portrait",
+            "landscape"
+          ],
+          "default": "portrait"
+        }
+      }
+    }
+  }
+}

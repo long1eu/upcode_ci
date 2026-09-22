@@ -96,6 +96,16 @@ api_config: { ... }
 | `generated` | no | Modules `flutter:buildrunner` runs in. Defaults to none. |
 | `analyzed` / `formatted` / `tested` | no | Per-task module overrides. Default to `modules`. |
 
+### Editor support
+
+[`upcode.schema.json`](upcode.schema.json) is a JSON Schema for `upcode.yaml`
+that gives completion, hover docs, and typo checks. Add this line at the top of
+`upcode.yaml` (works in VS Code with the YAML extension and in JetBrains IDEs):
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/long1eu/upcode_ci/master/upcode.schema.json
+```
+
 ### Authentication
 
 Commands that talk to Google Cloud, Firebase, or the Play Store authenticate
