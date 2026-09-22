@@ -1,3 +1,17 @@
+## 0.10.34
+
+Add per-module format excludes. A `formatted` entry can be
+`{<module>: {exclude: [<glob>, ...]}}`; `flutter:format` and `dart:format` then
+skip files in that module matching the globs (relative to the module), on top
+of the generated files they always skip. The JSON Schema accepts the new form.
+
+Authenticate only with the project's service account. Breaking:
+`fad ai-test` no longer accepts `--token` or reads `FIREBASE_TOKEN`,
+`firebase_client_id` and `firebase_client_secret`; `fad upload` drops its
+unused `--token` option. Commands that need the key now fail with an error
+naming the missing `private_dir` setting or
+`<private_dir>/service_account.json` file.
+
 ## 0.10.33
 
 Add `upcode.schema.json`, a JSON Schema for `upcode.yaml` that gives editors
