@@ -3,10 +3,8 @@
 // on 09/05/2020
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:path/path.dart' as path;
 import 'package:upcode_ci/src/commands/command.dart';
 
 class DartFormatCommand extends UpcodeCommand {
@@ -42,12 +40,7 @@ class DartFormatCommand extends UpcodeCommand {
     }
 
     for (final String module in modules) {
-      final List<String> files = Directory(module)
-          .listSync(recursive: true, followLinks: false)
-          .whereType<File>()
-          .map((File it) => it.path.split('$module${path.separator}')[1])
-          .where(fileFilter)
-          .toList();
+      final List<String> files = formattableFiles(module, formatExclude(module));
 
       final List<List<String>> elements = files.slices(100).toList();
 

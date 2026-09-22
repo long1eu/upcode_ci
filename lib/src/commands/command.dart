@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:args/src/arg_results.dart';
+import 'package:glob/glob.dart';
 import 'package:googleapis/androidpublisher/v3.dart';
 import 'package:googleapis/firebaseappdistribution/v1.dart' hide ProjectsResource;
 import 'package:googleapis/firestore/v1.dart' hide ProjectsResource;
@@ -231,12 +232,40 @@ abstract class UpcodeCommand extends Command<dynamic> {
     }
   }
 
-  List<String> get formattedModules {
-    if (_config.containsKey('formatted')) {
-      return List<String>.from(_config['formatted']).map((String item) => item.dirName).toList();
-    } else {
-      return modules;
+  /// Modules `flutter:format` and `dart:format` check by default. Defaults to [modules].
+  List<String> get formattedModules => _formatted.keys.toList();
+
+  /// Glob patterns, relative to [module], of files the formatter skips there.
+  List<Glob> formatExclude(String module) => _formatted[module] ?? const <Glob>[];
+
+  /// `formatted` entries are a module path or `{<module path>: {exclude: [<glob>, ...]}}`.
+  Map<String, List<Glob>> get _formatted {
+    if (!_config.containsKey('formatted')) {
+      return <String, List<Glob>>{for (final String module in modules) module: const <Glob>[]};
     }
+    return Map<String, List<Glob>>.fromEntries(
+      List<dynamic>.from(_config['formatted']).map(_formattedModule),
+    );
+  }
+
+  MapEntry<String, List<Glob>> _formattedModule(dynamic entry) {
+    if (entry is String) {
+      return MapEntry<String, List<Glob>>(entry.dirName, const <Glob>[]);
+    }
+    if (entry is Map && entry.length == 1) {
+      final String module = '${entry.keys.single}'.dirName;
+      final dynamic options = entry.values.single ?? const <String, dynamic>{};
+      if (options is Map && options.keys.every((dynamic key) => key == 'exclude')) {
+        final dynamic exclude = options['exclude'] ?? const <String>[];
+        if (exclude is List) {
+          return MapEntry<String, List<Glob>>(module, <Glob>[for (final dynamic pattern in exclude) Glob('$pattern')]);
+        }
+      }
+    }
+    throw StateError(
+      'Invalid `formatted` entry in upcode.yaml: $entry. '
+      'Use a module path or {<module path>: {exclude: [<glob>, ...]}}.',
+    );
   }
 
   List<String> get testedModules {
@@ -390,6 +419,18 @@ bool fileFilter(String it) =>
     !it.endsWith('.gr.dart') &&
     !it.endsWith('.config.dart') &&
     !it.endsWith('.test_coverage.dart');
+
+/// Files in [module] the formatter checks, relative to [module]: Dart sources that pass
+/// [fileFilter] and match none of the [exclude] globs.
+List<String> formattableFiles(String module, List<Glob> exclude) {
+  return Directory(module)
+      .listSync(recursive: true, followLinks: false)
+      .whereType<File>()
+      .map((File file) => path.relative(file.path, from: module))
+      .where(fileFilter)
+      .where((String file) => !exclude.any((Glob glob) => glob.matches(file)))
+      .toList();
+}
 
 bool? _fvmOnPathCache;
 
