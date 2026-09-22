@@ -1,3 +1,14 @@
+## 0.10.32
+
+`upcode fad ai-test`: follow `prerequisiteTestCaseId` in the tests YAML. Each
+test's steps are prefixed with its prerequisite chain, outermost first, as the
+Firebase CLI does; unknown ids and cycles are rejected.
+
+Send `--results-bucket` as the `projects/<number>/buckets/<name>` path the
+release-tests API expects. It accepts a bare bucket name or a `gs://` URL and
+rejects invalid names. A `--device` spec without `locale` now defaults to
+`en_US`, matching the Firebase CLI.
+
 ## 0.10.31
 
 Add `--wait` to `upcode fad ai-test`: poll until every test reaches a terminal
