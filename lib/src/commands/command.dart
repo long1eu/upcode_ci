@@ -265,7 +265,8 @@ abstract class UpcodeCommand extends Command<dynamic> {
   String get dartApiGeneratedDir => path.join(apiDir, 'lib', 'generated');
 
   String get protoSrcDir {
-    return _config['protos_dir'].replaceAll('/', path.separator) ?? path.join(flutterResDir, 'protos');
+    final String? protosDir = _config['protos_dir'];
+    return protosDir?.replaceAll('/', path.separator) ?? path.join(flutterResDir, 'protos');
   }
 
   String get protoApiOutDir {

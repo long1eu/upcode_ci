@@ -1,4 +1,5 @@
 import 'package:args/command_runner.dart';
+import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
@@ -63,4 +64,23 @@ void main() {
     });
   });
 
+  group('protos_dir', () {
+    test('defaults to <flutter_dir>/res/protos', () async {
+      final String dir = await readConfig(
+        'flutter_dir: app',
+        (_ProbeCommand command) => command.protoSrcDir,
+      );
+
+      expect(dir, join('app', 'res', 'protos'));
+    });
+
+    test('uses the configured directory', () async {
+      final String dir = await readConfig(
+        'flutter_dir: app\nprotos_dir: protos/src',
+        (_ProbeCommand command) => command.protoSrcDir,
+      );
+
+      expect(dir, join('protos', 'src'));
+    });
+  });
 }
