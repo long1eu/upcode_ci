@@ -71,7 +71,10 @@ protos_output_dir: generated  # optional
 modules: [app, packages/core] # defaults to [flutter_dir]
 generated: [app]              # modules that run build_runner; defaults to none
 analyzed: [app]               # modules analyzed by flutter:analyze; defaults to modules
-formatted: [app]              # modules formatted by flutter:format; defaults to modules
+formatted:                    # modules formatted by flutter:format; defaults to modules
+  - app:
+      exclude: [lib/l10n/**, '**/*.pb.dart'] # globs relative to the module
+  - packages/core
 tested: [app]                 # modules tested by flutter:test; defaults to modules
 
 # Nested maps consumed by the version commands
@@ -95,6 +98,12 @@ api_config: { ... }
 | `modules` | no | Modules acted on by default. Defaults to `[flutter_dir]`. |
 | `generated` | no | Modules `flutter:buildrunner` runs in. Defaults to none. |
 | `analyzed` / `formatted` / `tested` | no | Per-task module overrides. Default to `modules`. |
+
+`flutter:format` and `dart:format` always skip generated files (`*.g.dart`,
+`*.freezed.dart`, `lib/generated/`, and similar). To skip more, write the
+module as a map with an `exclude` list of glob patterns relative to that module,
+as in `app` above. Use `**` to match across directories (`lib/l10n/**`), and
+quote patterns that start with `*`, which YAML otherwise reads as an alias.
 
 ### Editor support
 

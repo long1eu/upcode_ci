@@ -95,12 +95,55 @@
       }
     },
     "formatted": {
-      "description": "Modules checked by `flutter:format` and `dart:format`. Defaults to `modules`.",
+      "description": "Modules checked by `flutter:format` and `dart:format`. Defaults to `modules`. An entry is a module path, or a map from one module path to its options.",
       "type": "array",
       "items": {
-        "type": "string",
-        "minLength": 1
-      }
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 1,
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "exclude": {
+                      "description": "Glob patterns, relative to the module, of files the formatter skips (e.g. `lib/l10n/**`, `**/*.pb.dart`). Generated files are always skipped. Quote patterns that start with `*`.",
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "examples": [
+        [
+          "app",
+          {
+            "packages/core": {
+              "exclude": [
+                "lib/l10n/**",
+                "**/*.pb.dart"
+              ]
+            }
+          }
+        ]
+      ]
     },
     "tested": {
       "description": "Modules tested by `flutter:test`. Defaults to `modules`.",

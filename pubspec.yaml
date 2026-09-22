@@ -1,6 +1,6 @@
 name: upcode_ci
 description: A collection of tools used by Upcode team
-version: 0.10.33
+version: 0.10.34
 repository: https://github.com/long1eu/upcode_ci
 executables:
   upcode:
@@ -28,5 +28,6 @@ dependencies:
   _discoveryapis_commons: ^1.0.6
   grpc: ^3.2.4
   strings: ^2.0.3
+  glob: ^2.2.0
 dev_dependencies:
   test: ^1.31.1

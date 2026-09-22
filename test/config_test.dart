@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:glob/glob.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:upcode_ci/src/commands/command.dart';
@@ -98,6 +99,61 @@ void main() {
 
       expect(dir, join('other', 'protos'));
     });
+  });
+
+  group('formatted', () {
+    test('accepts module paths and maps with an exclude list', () async {
+      final List<String> modules = await readConfig(
+        'formatted: [{app: {exclude: [lib/l10n/**]}}, packages/core]',
+        (_ProbeCommand command) => command.formattedModules,
+      );
+
+      expect(modules, <String>['app'.dirName, 'packages/core'.dirName]);
+    });
+
+    test('returns the exclude patterns of a module', () async {
+      final List<String> patterns = await readConfig(
+        "formatted: [{app: {exclude: [lib/l10n/**, '**/*.pb.dart']}}, packages/core]",
+        (_ProbeCommand command) => <String>[
+          for (final Glob glob in command.formatExclude('app'.dirName)) glob.pattern,
+          for (final Glob glob in command.formatExclude('packages/core'.dirName)) glob.pattern,
+        ],
+      );
+
+      expect(patterns, <String>['lib/l10n/**', '**/*.pb.dart']);
+    });
+
+    test('treats a module with no options as having no excludes', () async {
+      final List<Glob> exclude = await readConfig(
+        'formatted: [{app: }]',
+        (_ProbeCommand command) => command.formatExclude('app'.dirName),
+      );
+
+      expect(exclude, isEmpty);
+    });
+
+    test('defaults to modules with no excludes', () async {
+      final List<String> modules = await readConfig(
+        'modules: [app, packages/core]',
+        (_ProbeCommand command) => command.formattedModules,
+      );
+
+      expect(modules, <String>['app'.dirName, 'packages/core'.dirName]);
+    });
+
+    for (final String entry in <String>[
+      '{app: {exclude: lib/l10n/**}}',
+      '{app: {exlude: [lib/l10n/**]}}',
+      '{app: {}, core: {}}',
+      '[app]',
+    ]) {
+      test('rejects the malformed entry $entry', () {
+        expect(
+          readConfig('formatted: [$entry]', (_ProbeCommand command) => command.formattedModules),
+          throwsA(isA<StateError>().having((StateError e) => e.message, 'message', contains('formatted'))),
+        );
+      });
+    }
   });
 
   group('service account', () {
