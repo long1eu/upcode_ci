@@ -1,3 +1,14 @@
+## 0.10.33
+
+Add `upcode.schema.json`, a JSON Schema for `upcode.yaml` that gives editors
+completion, hover docs, and typo checks. The README shows how to enable it.
+
+Fix `upcode.yaml` handling found while writing it: per-image
+`api.images[].deadline_seconds` is now used (it was ignored), an integer
+`api.gateway_deadline_seconds` no longer throws, a missing `protos_dir` falls
+back to `<flutter_dir>/res/protos` instead of crashing, and the `--protos_dir`
+global option now takes effect.
+
 ## 0.10.32
 
 `upcode fad ai-test`: follow `prerequisiteTestCaseId` in the tests YAML. Each
