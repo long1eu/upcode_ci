@@ -38,6 +38,123 @@ fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest buildReleaseTest({
   );
 }
 
+/// Default test device. API 34: the App Testing agent could not type into text fields on the
+/// API 36 emulator image (2026-09-06), while 33-35 logged in within a minute.
+const String kDefaultAiTestDevice = 'model=MediumPhone.arm,version=34,locale=en,orientation=portrait';
+
+final RegExp _bucketName = RegExp(r'^[a-z0-9][a-z0-9._-]{1,61}[a-z0-9]$');
+
+/// The `resultsBucket` value the release-tests API expects: a project-scoped
+/// resource path, not a bare bucket name. Mirrors the Firebase CLI's
+/// `getResultsBucket`. Null when no bucket is given, so Firebase uses its default.
+String? resultsBucketResource(String? bucket, String appId) {
+  if (bucket == null || bucket.isEmpty) {
+    return null;
+  }
+  final String name = bucket.startsWith('gs://') ? bucket.substring(5) : bucket;
+  if (!_bucketName.hasMatch(name)) {
+    throw FormatException('Invalid results bucket name "$bucket".');
+  }
+  final List<String> parts = appId.split(':');
+  if (parts.length < 2 || parts[1].isEmpty) {
+    throw FormatException('Invalid Firebase app id "$appId".');
+  }
+  return 'projects/${parts[1]}/buckets/$name';
+}
+
+/// One test case as written in the YAML.
+class AiTestDefinition {
+  const AiTestDefinition({
+    required this.displayName,
+    required this.id,
+    required this.prerequisiteTestCaseId,
+    required this.steps,
+  });
+
+  final String? displayName;
+  final String? id;
+  final String? prerequisiteTestCaseId;
+  final List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps;
+
+  AiTestDefinition withSteps(List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps) {
+    return AiTestDefinition(
+      displayName: displayName,
+      id: id,
+      prerequisiteTestCaseId: prerequisiteTestCaseId,
+      steps: steps,
+    );
+  }
+}
+
+/// Parses the test-case YAML. Accepts both `successCriteria` and
+/// `finalScreenAssertion` for the success text.
+List<AiTestDefinition> parseAiTests(String yaml) {
+  final dynamic doc = loadYaml(yaml);
+  final List<dynamic> tests = (doc['tests'] as List<dynamic>?) ?? <dynamic>[];
+  return tests.map((dynamic test) {
+    final List<dynamic> steps = (test['steps'] as List<dynamic>?) ?? <dynamic>[];
+    return AiTestDefinition(
+      displayName: (test['displayName'] ?? test['name'])?.toString(),
+      id: test['id']?.toString(),
+      prerequisiteTestCaseId: test['prerequisiteTestCaseId']?.toString(),
+      steps: steps.map((dynamic step) {
+        final dynamic success = step['successCriteria'] ?? step['finalScreenAssertion'];
+        return fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep(
+          goal: step['goal']?.toString(),
+          assertion: step['assertion']?.toString(),
+          hint: step['hint']?.toString(),
+          successCriteria: success?.toString(),
+        );
+      }).toList(),
+    );
+  }).toList();
+}
+
+/// Prepends each test's prerequisite chain to its own steps, outermost first,
+/// the way the Firebase CLI's `parseTestFiles` does. Inline AI instructions
+/// have no prerequisite concept, so a dependent test has to carry the steps
+/// that put the app into the state it expects.
+List<AiTestDefinition> flattenPrerequisites(List<AiTestDefinition> tests) {
+  final Map<String, AiTestDefinition> byId = <String, AiTestDefinition>{
+    for (final AiTestDefinition test in tests)
+      if (test.id != null) test.id!: test,
+  };
+  return tests.map((AiTestDefinition test) {
+    final List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> prefix =
+        <fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep>[];
+    final Set<String> visited = <String>{};
+    String? prerequisite = test.prerequisiteTestCaseId;
+    while (prerequisite != null) {
+      if (!visited.add(prerequisite)) {
+        throw FormatException('Cycle in prerequisite test cases at "$prerequisite".');
+      }
+      final AiTestDefinition? dependency = byId[prerequisite];
+      if (dependency == null) {
+        throw FormatException(
+          'Unknown prerequisiteTestCaseId "$prerequisite" on test "${test.displayName ?? test.id}".',
+        );
+      }
+      prefix.insertAll(0, dependency.steps);
+      prerequisite = dependency.prerequisiteTestCaseId;
+    }
+    return test.withSteps(<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep>[...prefix, ...test.steps]);
+  }).toList();
+}
+
+/// Parses `model=<id>,version=<api>,locale=<locale>,orientation=<o>`; locale
+/// and orientation default to the Firebase CLI's `en_US` and `portrait`.
+fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice parseTestDevice(String spec) {
+  final Map<String, String> parts = <String, String>{
+    for (final String pair in spec.split(',')) pair.split('=').first.trim(): pair.split('=').last.trim(),
+  };
+  return fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice(
+    model: parts['model'],
+    version: parts['version'],
+    locale: parts['locale'] ?? 'en_US',
+    orientation: parts['orientation'] ?? 'portrait',
+  );
+}
+
 class FadCommand extends UpcodeCommand with EnvironmentMixin, ApplicationMixin {
   FadCommand(Map<String, dynamic> config) : super(config) {
     addSubcommand(FadUploadCommand(config));
@@ -335,12 +452,12 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
             'model=<id>,version=<api>,locale=<locale>,orientation=<portrait|landscape>. '
             'Repeat the flag for multiple devices.',
         splitCommas: false,
-        defaultsTo: <String>['model=MediumPhone.arm,version=34,locale=en,orientation=portrait'],
+        defaultsTo: <String>[kDefaultAiTestDevice],
       )
       ..addOption(
         'results-bucket',
-        help: 'GCS bucket for raw test artifacts (logs, video, screenshots). '
-            'Defaults to the App Distribution results bucket.',
+        help: 'GCS bucket for raw test artifacts (logs, video, screenshots), as a bare name '
+            'or gs:// URL. When omitted, Firebase uses its default bucket.',
       )
       ..addOption('timeout', help: 'Minutes to wait for results before giving up.', defaultsTo: '15')
       ..addFlag(
@@ -442,38 +559,9 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     return fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential(username: username, password: password);
   }
 
-  fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice _device(String spec) {
-    final Map<String, String> parts = <String, String>{
-      for (final String pair in spec.split(',')) pair.split('=').first.trim(): pair.split('=').last.trim(),
-    };
-    return fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice(
-      model: parts['model'],
-      version: parts['version'],
-      locale: parts['locale'] ?? 'en',
-      orientation: parts['orientation'] ?? 'portrait',
-    );
-  }
-
-  /// Reads the YAML into (displayName, steps) records. Accepts both
-  /// `successCriteria` and `finalScreenAssertion` for the success text.
-  List<({String? displayName, List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps})> _readTests() {
-    final dynamic doc = loadYaml(File(argResults!['tests'] as String).readAsStringSync());
-    final List<dynamic> tests = (doc['tests'] as List<dynamic>?) ?? <dynamic>[];
-    return tests.map((dynamic test) {
-      final List<dynamic> steps = (test['steps'] as List<dynamic>?) ?? <dynamic>[];
-      return (
-        displayName: (test['displayName'] ?? test['name'])?.toString(),
-        steps: steps.map((dynamic step) {
-          final dynamic success = step['successCriteria'] ?? step['finalScreenAssertion'];
-          return fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep(
-            goal: step['goal']?.toString(),
-            assertion: step['assertion']?.toString(),
-            hint: step['hint']?.toString(),
-            successCriteria: success?.toString(),
-          );
-        }).toList(),
-      );
-    }).toList();
+  /// Reads the YAML test cases and flattens each prerequisite chain into the test's steps.
+  List<AiTestDefinition> _readTests() {
+    return flattenPrerequisites(parseAiTests(File(argResults!['tests'] as String).readAsStringSync()));
   }
 
   /// Creates one release test via the generated v1alpha client. Retries on
@@ -484,13 +572,14 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     required List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps,
     required List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice> devices,
     required fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential? loginCredential,
+    required String? resultsBucket,
   }) async {
     final fad_v1alpha.GoogleFirebaseAppdistroV1alphaReleaseTest request = buildReleaseTest(
       displayName: displayName,
       steps: steps,
       devices: devices,
       loginCredential: loginCredential,
-      resultsBucket: argResults!['results-bucket'] as String?,
+      resultsBucket: resultsBucket,
     );
     final fad_v1alpha.FirebaseAppDistributionApi api = fad_v1alpha.FirebaseAppDistributionApi(_testClient);
 
@@ -564,10 +653,10 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
         await execute(() => _upload(path: path, appId: appId), 'Upload release (no distribution)');
 
     final List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaTestDevice> devices =
-        (argResults!['device'] as List<String>).map(_device).toList();
+        (argResults!['device'] as List<String>).map(parseTestDevice).toList();
     final fad_v1alpha.GoogleFirebaseAppdistroV1alphaLoginCredential? loginCredential = _loginCredential();
-    final List<({String? displayName, List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps})> tests =
-        _readTests();
+    final List<AiTestDefinition> tests = _readTests();
+    final String? resultsBucket = resultsBucketResource(argResults!['results-bucket'] as String?, appId);
     final bool wait = argResults!['wait'] as bool;
     final Duration? timeout =
         wait ? null : Duration(minutes: int.tryParse(argResults!['timeout'] as String) ?? 15);
@@ -575,14 +664,14 @@ class FadAiTestCommand extends UpcodeCommand with EnvironmentMixin, ApplicationM
     final Map<String, String> started = <String, String>{};
     await execute(
       () async {
-        for (final ({String? displayName, List<fad_v1alpha.GoogleFirebaseAppdistroV1alphaAiStep> steps}) test
-            in tests) {
+        for (final AiTestDefinition test in tests) {
           final String testName = await _createReleaseTest(
             releaseName: releaseName,
             displayName: test.displayName,
             steps: test.steps,
             devices: devices,
             loginCredential: loginCredential,
+            resultsBucket: resultsBucket,
           );
           started[test.displayName ?? testName] = testName;
         }
