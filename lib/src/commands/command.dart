@@ -50,6 +50,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
       if (argResults.wasParsed('private_dir')) 'private_dir': argResults['private_dir'],
       if (argResults.wasParsed('api_dir')) 'api_dir': argResults['api_dir'],
       if (argResults.wasParsed('api_dockerfile_dir')) 'api_dockerfile_dir': argResults['api_dockerfile_dir'],
+      if (argResults.wasParsed('protos_dir')) 'protos_dir': argResults['protos_dir'],
       if (argResults.wasParsed('google_project_location'))
         'google_project_location': argResults['google_project_location'],
     };

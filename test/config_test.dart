@@ -23,12 +23,16 @@ class _ProbeCommand extends UpcodeCommand with EnvironmentMixin {
 }
 
 /// Parses [yaml] the way `bin/upcode.dart` does and returns what [read] sees
-/// from inside a running command.
-Future<T> readConfig<T>(String yaml, T Function(_ProbeCommand command) read) async {
+/// from inside a command run with [args].
+Future<T> readConfig<T>(
+  String yaml,
+  T Function(_ProbeCommand command) read, {
+  List<String> args = const <String>[],
+}) async {
   final Map<String, dynamic> config = <String, dynamic>{'pwd': '.', ...loadYaml(yaml)};
   late T value;
   final _ProbeCommand probe = _ProbeCommand(config, (_ProbeCommand command) => value = read(command));
-  await (CommandRunner<dynamic>('upcode', 'test')..addCommand(probe)).run(<String>['probe']);
+  await (CommandRunner<dynamic>('upcode', 'test')..addCommand(probe)).run(<String>['probe', ...args]);
   return value;
 }
 
@@ -81,6 +85,16 @@ void main() {
       );
 
       expect(dir, join('protos', 'src'));
+    });
+
+    test('is overridden by --protos_dir', () async {
+      final String dir = await readConfig(
+        'flutter_dir: app\nprotos_dir: protos/src',
+        (_ProbeCommand command) => command.protoSrcDir,
+        args: <String>['--protos_dir', 'other/protos'],
+      );
+
+      expect(dir, join('other', 'protos'));
     });
   });
 }

@@ -61,7 +61,7 @@
       "minLength": 1
     },
     "protos_dir": {
-      "description": "Directory with the source `.proto` files. Defaults to `<flutter_dir>/res/protos`.",
+      "description": "Directory with the source `.proto` files. Defaults to `<flutter_dir>/res/protos`. Overridden by `--protos_dir`.",
       "type": "string",
       "minLength": 1
     },
