@@ -34,7 +34,7 @@ class FlutterFastlaneDeployCommand extends UpcodeCommand with EnvironmentMixin, 
   @override
   FutureOr<dynamic> run() async {
     if (argResults!['platform'] == 'android') {
-      final String serviceAccountKey = join(privateDir, 'service_account.json');
+      final String serviceAccountKey = serviceAccountFile;
       final String path = join(flutterDir, 'build', 'app', 'outputs', 'bundle', '$env\Release', 'app-$env-release.aab');
 
       await execute(

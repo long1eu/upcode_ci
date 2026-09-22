@@ -41,7 +41,7 @@
       "minLength": 1
     },
     "private_dir": {
-      "description": "Directory containing `service_account.json`. Required by commands that authenticate with Google. Overridden by `--private_dir`.",
+      "description": "Directory containing `service_account.json`, the key every Google Cloud, Firebase and Play Store call authenticates with. Commands that need it fail when it is missing. Overridden by `--private_dir`.",
       "type": "string",
       "minLength": 1
     },

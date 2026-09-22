@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart';
 import 'package:test/test.dart';
@@ -95,6 +97,45 @@ void main() {
       );
 
       expect(dir, join('other', 'protos'));
+    });
+  });
+
+  group('service account', () {
+    late Directory privateDir;
+
+    setUp(() => privateDir = Directory.systemTemp.createTempSync('upcode_private'));
+    tearDown(() => privateDir.deleteSync(recursive: true));
+
+    test('resolves <private_dir>/service_account.json', () async {
+      final String key = join(privateDir.path, 'service_account.json');
+      File(key).writeAsStringSync('{}');
+
+      final String file = await readConfig(
+        'private_dir: ${privateDir.path}',
+        (_ProbeCommand command) => command.serviceAccountFile,
+      );
+
+      expect(file, key);
+    });
+
+    test('fails when private_dir is not set', () {
+      expect(
+        readConfig('flutter_dir: app', (_ProbeCommand command) => command.serviceAccountFile),
+        throwsA(isA<StateError>().having((StateError e) => e.message, 'message', contains('private_dir'))),
+      );
+    });
+
+    test('fails when service_account.json is missing', () {
+      expect(
+        readConfig('private_dir: ${privateDir.path}', (_ProbeCommand command) => command.serviceAccountFile),
+        throwsA(
+          isA<StateError>().having(
+            (StateError e) => e.message,
+            'message',
+            contains(join(privateDir.path, 'service_account.json')),
+          ),
+        ),
+      );
     });
   });
 }
