@@ -67,12 +67,12 @@ api_dockerfile_dir: api       # optional, defaults to api_dir
 protos_dir: app/res/protos    # optional, defaults to <flutter_dir>/res/protos
 protos_output_dir: generated  # optional
 
-# Module lists (optional; default to [flutter_dir])
-modules: [app, packages/core]
-generated: [app]              # modules that run build_runner
-analyzed: [app]               # modules analyzed by flutter:analyze
-formatted: [app]              # modules formatted by flutter:format
-tested: [app]                 # modules tested by flutter:test
+# Module lists (optional)
+modules: [app, packages/core] # defaults to [flutter_dir]
+generated: [app]              # modules that run build_runner; defaults to none
+analyzed: [app]               # modules analyzed by flutter:analyze; defaults to modules
+formatted: [app]              # modules formatted by flutter:format; defaults to modules
+tested: [app]                 # modules tested by flutter:test; defaults to modules
 
 # Nested maps consumed by the version commands
 api: { ... }
@@ -93,7 +93,18 @@ api_config: { ... }
 | `protos_dir` | no | Source `.proto` directory. |
 | `protos_output_dir` | no | Generated protobuf output directory. |
 | `modules` | no | Modules acted on by default. Defaults to `[flutter_dir]`. |
-| `generated` / `analyzed` / `formatted` / `tested` | no | Per-task module overrides. |
+| `generated` | no | Modules `flutter:buildrunner` runs in. Defaults to none. |
+| `analyzed` / `formatted` / `tested` | no | Per-task module overrides. Default to `modules`. |
+
+### Editor support
+
+[`upcode.schema.json`](upcode.schema.json) is a JSON Schema for `upcode.yaml`
+that gives completion, hover docs, and typo checks. Add this line at the top of
+`upcode.yaml` (works in VS Code with the YAML extension and in JetBrains IDEs):
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/long1eu/upcode_ci/master/upcode.schema.json
+```
 
 ### Authentication
 

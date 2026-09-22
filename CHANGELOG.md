@@ -1,3 +1,45 @@
+## 0.10.33
+
+Add `upcode.schema.json`, a JSON Schema for `upcode.yaml` that gives editors
+completion, hover docs, and typo checks. The README shows how to enable it.
+
+Fix `upcode.yaml` handling found while writing it: per-image
+`api.images[].deadline_seconds` is now used (it was ignored), an integer
+`api.gateway_deadline_seconds` no longer throws, a missing `protos_dir` falls
+back to `<flutter_dir>/res/protos` instead of crashing, and the `--protos_dir`
+global option now takes effect.
+
+## 0.10.32
+
+`upcode fad ai-test`: follow `prerequisiteTestCaseId` in the tests YAML. Each
+test's steps are prefixed with its prerequisite chain, outermost first, as the
+Firebase CLI does; unknown ids and cycles are rejected.
+
+Send `--results-bucket` as the `projects/<number>/buckets/<name>` path the
+release-tests API expects. It accepts a bare bucket name or a `gs://` URL and
+rejects invalid names. A `--device` spec without `locale` now defaults to
+`en_US`, matching the Firebase CLI.
+
+## 0.10.31
+
+Add `--wait` to `upcode fad ai-test`: poll until every test reaches a terminal
+state, ignoring `--timeout`.
+
+## 0.10.30
+
+`upcode fad ai-test`: drive the App Testing release-tests API through a typed
+client generated from the firebaseappdistribution v1alpha discovery document,
+replacing the hand-rolled http calls. Adds the pinned discovery doc and a
+`tool/generate_clients.sh` regeneration script. Raises the minimum Dart SDK to
+3.8.0 (the generated client uses null-aware elements).
+
+## 0.10.29
+
+`upcode fad ai-test`: fall back to the service account for the App Testing
+release-tests API when no Firebase user token is provided. A user token
+(`--token` or `FIREBASE_TOKEN`) is still used when present; without one the
+command now uses the service-account client instead of failing.
+
 ## 0.10.28
 
 Remove the deprecated `upcode flutter:fad` command; use `upcode fad upload`

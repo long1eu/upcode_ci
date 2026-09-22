@@ -91,7 +91,9 @@ mixin EnvironmentMixin on UpcodeCommand {
 
   String get gatewayBaseName => apiApiConfig['gateway_base_name'];
 
-  double get gatewayDeadlineSeconds => apiApiConfig['gateway_deadline_seconds'] ?? 15.0;
+  double get gatewayDeadlineSeconds {
+    return (apiApiConfig['gateway_deadline_seconds'] as num?)?.toDouble() ?? 15.0;
+  }
 
   String get apiBaseDisplayName => apiApiConfig['api_base_display_name'];
 
@@ -158,7 +160,7 @@ mixin EnvironmentMixin on UpcodeCommand {
       return ApiImage(
         name: image['name'] ?? '',
         selector: image['selector'] ?? '*',
-        deadlineSeconds: double.tryParse('deadline_seconds') ?? gatewayDeadlineSeconds,
+        deadlineSeconds: (image['deadline_seconds'] as num?)?.toDouble() ?? gatewayDeadlineSeconds,
         cloudSqlInstances: image['cloudsql_instances'] //
                 ?.map((dynamic name) => '$name')
                 ?.cast<String>()

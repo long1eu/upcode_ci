@@ -50,6 +50,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
       if (argResults.wasParsed('private_dir')) 'private_dir': argResults['private_dir'],
       if (argResults.wasParsed('api_dir')) 'api_dir': argResults['api_dir'],
       if (argResults.wasParsed('api_dockerfile_dir')) 'api_dockerfile_dir': argResults['api_dockerfile_dir'],
+      if (argResults.wasParsed('protos_dir')) 'protos_dir': argResults['protos_dir'],
       if (argResults.wasParsed('google_project_location'))
         'google_project_location': argResults['google_project_location'],
     };
@@ -265,7 +266,8 @@ abstract class UpcodeCommand extends Command<dynamic> {
   String get dartApiGeneratedDir => path.join(apiDir, 'lib', 'generated');
 
   String get protoSrcDir {
-    return _config['protos_dir'].replaceAll('/', path.separator) ?? path.join(flutterResDir, 'protos');
+    final String? protosDir = _config['protos_dir'];
+    return protosDir?.replaceAll('/', path.separator) ?? path.join(flutterResDir, 'protos');
   }
 
   String get protoApiOutDir {

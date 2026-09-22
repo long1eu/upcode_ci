@@ -1,12 +1,12 @@
 name: upcode_ci
 description: A collection of tools used by Upcode team
-version: 0.10.28
+version: 0.10.33
 repository: https://github.com/long1eu/upcode_ci
 executables:
   upcode:
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.8.0 <4.0.0'
 
 dependencies:
   path: ^1.8.3
@@ -25,6 +25,7 @@ dependencies:
   protobuf: ^3.1.0
   fixnum: ^1.1.0
   collection: ^1.18.0
+  _discoveryapis_commons: ^1.0.6
   grpc: ^3.2.4
   strings: ^2.0.3
 dev_dependencies:
