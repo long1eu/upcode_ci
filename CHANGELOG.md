@@ -1,3 +1,15 @@
+## 0.10.35
+
+Add a `windows` section for apps that ship more than one environment on
+Windows, where Flutter has no flavors. Set per environment, it holds the app's
+`name`, `binary_name` and `installer_id`; `flutter:environment set` writes them
+to `windows/environment.cmake` and `windows/environment.iss` for the CMake build
+and an Inno Setup script, and removes both files for an environment without one.
+The JSON Schema accepts the new section.
+
+`flutter:environment set` now creates `lib/generated` when it is missing, as
+`flutter:version set` already did, instead of failing on a fresh checkout.
+
 ## 0.10.34
 
 Add per-module format excludes. A `formatted` entry can be
