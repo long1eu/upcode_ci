@@ -98,12 +98,39 @@ api_config: { ... }
 | `modules` | no | Modules acted on by default. Defaults to `[flutter_dir]`. |
 | `generated` | no | Modules `flutter:buildrunner` runs in. Defaults to none. |
 | `analyzed` / `formatted` / `tested` | no | Per-task module overrides. Default to `modules`. |
+| `windows` | for Windows builds | The Windows app's identity: `name`, `binary_name` and `installer_id`. See below. |
 
 `flutter:format` and `dart:format` always skip generated files (`*.g.dart`,
 `*.freezed.dart`, `lib/generated/`, and similar). To skip more, write the
 module as a map with an `exclude` list of glob patterns relative to that module,
 as in `app` above. Use `**` to match across directories (`lib/l10n/**`), and
 quote patterns that start with `*`, which YAML otherwise reads as an alias.
+
+### Windows app identity
+
+Flutter has no flavors on Windows, so an app that ships more than one
+environment there sets its identity per environment:
+
+```yaml
+env:
+  prod:
+    windows:
+      name: Example                # window title, Start menu entry, data folder
+      binary_name: example         # the executable, without .exe
+      installer_id: 9C1F6A52-3E0B-4D7A-8F21-6B5E2C4D9A10 # Inno Setup AppId
+  dev:
+    windows:
+      name: Example Dev
+      binary_name: example_dev
+      installer_id: 2B7D4E91-0A6C-4F38-B5D2-E8C1937A4F06
+```
+
+`flutter:environment set` writes it to `windows/environment.cmake`, for
+`windows/CMakeLists.txt` to `include()`, and `windows/environment.iss`, for an
+Inno Setup script to `#include`. An environment without a `windows` section gets
+neither file, and any left by an earlier one are removed. Give each environment
+its own `installer_id` and never change it once shipped: it is what lets an
+install upgrade in place. Both files are generated, so add them to `.gitignore`.
 
 ### Editor support
 

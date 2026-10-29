@@ -10,6 +10,7 @@ import 'package:strings/strings.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
 import 'package:upcode_ci/src/commands/flutter/application_mixin.dart';
+import 'package:upcode_ci/src/commands/flutter/windows_identity.dart';
 import 'package:xml/xml.dart';
 
 class FlutterEnvironmentCommand extends UpcodeCommand {
@@ -80,6 +81,10 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
 
   Future<void> _saveFlutterConfiguration() async {
     stdout.writeln('Saving Flutter configuration');
+    // A fresh checkout has no lib/generated until a generator runs; create it, as version.dart does.
+    if (!flutterGeneratedDir.dir.existsSync()) {
+      flutterGeneratedDir.dir.createSync(recursive: true);
+    }
     final StringBuffer buffer = StringBuffer() //
       ..writeln('// ignore: avoid_classes_with_only_static_members')
       ..writeln('class Config {');
@@ -112,6 +117,26 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
     join(flutterGeneratedDir, 'config.dart').writeAsStringSync(buffer.toString());
   }
 
+  /// Writes the environment's Windows identity where the Windows build reads it (see
+  /// [WindowsIdentity]). When this environment has none, it removes what an earlier one wrote, so a
+  /// build never carries another environment's name.
+  void _saveWindowsConfiguration() {
+    final File cmake = File(join(windowsDir, 'environment.cmake'));
+    final File innoSetup = File(join(windowsDir, 'environment.iss'));
+    final WindowsIdentity? identity = windowsIdentity;
+    if (identity == null) {
+      for (final File file in <File>[cmake, innoSetup]) {
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
+      }
+      return;
+    }
+
+    cmake.writeAsStringSync(identity.cmake);
+    innoSetup.writeAsStringSync(identity.innoSetup);
+  }
+
   @override
   FutureOr<dynamic> run() async {
     // todo: do we really need the android and ios api keys?
@@ -129,6 +154,9 @@ class FlutterSetEnvironmentCommand extends UpcodeCommand
       await execute(_setIdeaEnv, 'Updating IntelliJ Idea run configuration.');
     }
     await execute(_saveFlutterConfiguration, 'Saving Flutter configuration');
+    if (Directory(windowsDir).existsSync()) {
+      await execute(_saveWindowsConfiguration, 'Saving Windows configuration');
+    }
   }
 }
 
