@@ -17,6 +17,7 @@ import 'package:googleapis_beta/firebase/v1beta1.dart';
 import 'package:path/path.dart' as path;
 import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:upcode_ci/src/commands/flutter/windows_identity.dart';
 
 AutoRefreshingAuthClient? googleClient;
 
@@ -56,6 +57,10 @@ abstract class UpcodeCommand extends Command<dynamic> {
         'google_project_location': argResults['google_project_location'],
     };
   }
+
+  /// The Windows app's identity from the `windows` key, once `--env` has merged its environment in,
+  /// or null when it is not set.
+  WindowsIdentity? get windowsIdentity => WindowsIdentity.fromConfig(_config['windows']);
 
   Map<String, dynamic> get flutterConfig {
     final Map<String, dynamic> data = Map<String, dynamic>.from(_config['api_config'] ?? <String, dynamic>{});
@@ -285,6 +290,8 @@ abstract class UpcodeCommand extends Command<dynamic> {
   String get iosDir => path.join(flutterDir, 'ios');
 
   String get macosDir => path.join(flutterDir, 'macos');
+
+  String get windowsDir => path.join(flutterDir, 'windows');
 
   String get flutterResDir => path.join(flutterDir, 'res');
 

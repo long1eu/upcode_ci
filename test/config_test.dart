@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'package:test/test.dart';
 import 'package:upcode_ci/src/commands/command.dart';
 import 'package:upcode_ci/src/commands/environment_mixin.dart';
+import 'package:upcode_ci/src/commands/flutter/windows_identity.dart';
 import 'package:yaml/yaml.dart';
 
 class _ProbeCommand extends UpcodeCommand with EnvironmentMixin {
@@ -154,6 +155,37 @@ void main() {
         );
       });
     }
+  });
+
+  group('windows', () {
+    const String yaml = '''
+env:
+  prod:
+    windows:
+      name: Cinderblock
+      binary_name: cinderblock
+      installer_id: 5E2A1C7B-9D44-4F1E-8B36-2C0F7A9D41E8
+  dev:
+    windows:
+      name: Cinderblock Dev
+      binary_name: cinderblock_dev
+      installer_id: FD9718A0-AED3-4C67-AD70-FB4F40F11E2A
+''';
+
+    test('is the identity of the environment --env names', () async {
+      final String? prod =
+          await readConfig(yaml, (_ProbeCommand c) => c.windowsIdentity?.name, args: <String>['--env', 'prod']);
+      final String? dev =
+          await readConfig(yaml, (_ProbeCommand c) => c.windowsIdentity?.binaryName, args: <String>['--env', 'dev']);
+      expect(prod, 'Cinderblock');
+      expect(dev, 'cinderblock_dev');
+    });
+
+    test('is null when the environment has none', () async {
+      final WindowsIdentity? none =
+          await readConfig(yaml, (_ProbeCommand c) => c.windowsIdentity, args: <String>['--env', 'staging']);
+      expect(none, isNull);
+    });
   });
 
   group('service account', () {

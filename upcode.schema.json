@@ -319,6 +319,34 @@
       "description": "`ESPv2_ARGS` baked into the Cloud Endpoints proxy image by `api:deploy endpoints`. Defaults to a basic CORS preset that allows gRPC-Web headers.",
       "type": "string"
     },
+    "windows": {
+      "description": "The Windows app's identity, usually set per environment under `env.<name>.windows`. Flutter has no flavors on Windows, so `flutter:environment set` writes it to `windows/environment.cmake` (for `windows/CMakeLists.txt`) and `windows/environment.iss` (for an Inno Setup script). An environment without it gets neither file.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "binary_name",
+        "installer_id"
+      ],
+      "properties": {
+        "name": {
+          "description": "The name people see: the version resource's product name, the window title, the Start menu entry. Windows also names the app's data folder after it, so each environment keeps its own.",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[^\"\\\\]+$"
+        },
+        "binary_name": {
+          "description": "The executable's name, without `.exe`.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$"
+        },
+        "installer_id": {
+          "description": "The Inno Setup AppId, a GUID without braces. It is what lets an install upgrade in place, so it never changes once shipped, and each environment needs its own.",
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$"
+        }
+      }
+    },
     "env": {
       "description": "Per-environment overrides. When a command runs with `--env <name>`, the matching entry's keys replace the top-level keys of the same name (maps are replaced, not merged).",
       "type": "object",
