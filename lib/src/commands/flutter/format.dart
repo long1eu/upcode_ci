@@ -16,9 +16,15 @@ class FlutterFormatCommand extends UpcodeCommand {
         help:
             'If false it will only check if there are changes that need to be done and exits with non 0 code if so. If true it will format the code.',
       )
-      ..addMultiOption(
-        'module',
-        help: 'Select what modules you want to check.',
+      ..addMultiOption('module', help: 'Select what modules you want to check.')
+      ..addFlag(
+        'changed',
+        defaultsTo: false,
+        help: 'Only the files git reports as uncommitted, instead of every file in the module.',
+      )
+      ..addOption(
+        'since',
+        help: 'Only the files changed against this ref, plus anything uncommitted. Implies --changed.',
       );
   }
 
@@ -39,18 +45,32 @@ class FlutterFormatCommand extends UpcodeCommand {
       modules = formattedModules;
     }
 
+    // Formatting every file rewrites code nobody touched, and on a large module that is most of
+    // the work. With --changed or --since only what git reports is formatted; an empty result means
+    // nothing changed, and `slices` then yields no batch, so `dart format` is never called with no
+    // paths, which would format the whole directory.
+    final String? since = argResults!['since'] as String?;
+    final Set<String>? changed = (argResults!['changed'] as bool? ?? false) || since != null
+        ? changedFiles(since: since)
+        : null;
+
     for (final String module in modules) {
-      final List<String> files = formattableFiles(module, formatExclude(module));
+      List<String> files = formattableFiles(module, formatExclude(module));
+      if (changed != null) {
+        files = onlyChanged(module, files, changed);
+      }
 
       final List<List<String>> elements = files.slices(100).toList();
 
       for (final List<String> items in elements) {
         await execute(
-          () => runCommand(
-            'dart',
-            <String>['format', '-l', '120', if (!modify) '--set-exit-if-changed', ...items],
-            workingDirectory: module,
-          ),
+          () => runCommand('dart', <String>[
+            'format',
+            '-l',
+            '120',
+            if (!modify) '--set-exit-if-changed',
+            ...items,
+          ], workingDirectory: module),
           description,
         );
       }

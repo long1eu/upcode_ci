@@ -74,22 +74,16 @@ abstract class UpcodeCommand extends Command<dynamic> {
 
   Future<void> initFirebase() async {
     if (googleClient == null) {
-      await execute(
-        () async {
-          final String serviceAccount = serviceAccountFile.readAsStringSync();
-          googleClient = await clientViaServiceAccount(
-            ServiceAccountCredentials.fromJson(serviceAccount),
-            <String>[
-              FirebaseManagementApi.firebaseScope,
-              FirebaseManagementApi.cloudPlatformScope,
-              AndroidPublisherApi.androidpublisherScope,
-              'https://www.googleapis.com/auth/userinfo.email',
-              'https://www.googleapis.com/auth/firebase.database',
-            ],
-          );
-        },
-        'Initializing Firebase API',
-      );
+      await execute(() async {
+        final String serviceAccount = serviceAccountFile.readAsStringSync();
+        googleClient = await clientViaServiceAccount(ServiceAccountCredentials.fromJson(serviceAccount), <String>[
+          FirebaseManagementApi.firebaseScope,
+          FirebaseManagementApi.cloudPlatformScope,
+          AndroidPublisherApi.androidpublisherScope,
+          'https://www.googleapis.com/auth/userinfo.email',
+          'https://www.googleapis.com/auth/firebase.database',
+        ]);
+      }, 'Initializing Firebase API');
     }
   }
 
@@ -248,9 +242,7 @@ abstract class UpcodeCommand extends Command<dynamic> {
     if (!_config.containsKey('formatted')) {
       return <String, List<Glob>>{for (final String module in modules) module: const <Glob>[]};
     }
-    return Map<String, List<Glob>>.fromEntries(
-      List<dynamic>.from(_config['formatted']).map(_formattedModule),
-    );
+    return Map<String, List<Glob>>.fromEntries(List<dynamic>.from(_config['formatted']).map(_formattedModule));
   }
 
   MapEntry<String, List<Glob>> _formattedModule(dynamic entry) {
@@ -351,9 +343,11 @@ extension FileString on String {
   List<String> readAsLinesSync() => File(this).readAsLinesSync();
 
   Map<String, String> readPropertiesFile() {
-    return Map<String, String>.fromEntries(readAsLinesSync() //
-        .map((String e) => e.split('='))
-        .map((List<String> e) => MapEntry<String, String>(e[0], e[1])));
+    return Map<String, String>.fromEntries(
+      readAsLinesSync() //
+          .map((String e) => e.split('='))
+          .map((List<String> e) => MapEntry<String, String>(e[0], e[1])),
+    );
   }
 
   void writeAsStringSync(String content) => File(this).writeAsStringSync(content);
@@ -429,6 +423,55 @@ bool fileFilter(String it) =>
 
 /// Files in [module] the formatter checks, relative to [module]: Dart sources that pass
 /// [fileFilter] and match none of the [exclude] globs.
+/// Files git reports as changed, as paths relative to the repository root.
+///
+/// With [since], everything changed against that ref as well as anything uncommitted; without it,
+/// only what is uncommitted. Deletions are left out, since there is nothing left to format, and a
+/// rename contributes only its new path.
+///
+/// An empty result is a real answer: nothing changed. A caller must not fall back to every file,
+/// and must not hand an empty list to `dart format`, which formats the whole directory when given
+/// no paths.
+Set<String> changedFiles({String? since, String workingDirectory = '.'}) {
+  final Set<String> files = <String>{};
+  if (since != null) {
+    files.addAll(_gitLines(<String>['diff', '--name-only', '--diff-filter=ACMR', '$since...HEAD'], workingDirectory));
+  }
+  for (final String line in _gitLines(<String>[
+    'status',
+    '--porcelain=v1',
+    '--untracked-files=all',
+  ], workingDirectory)) {
+    if (line.length < 4) {
+      continue;
+    }
+    // "XY path", where either column may be a status; a deletion leaves nothing to format.
+    if (line.substring(0, 2).contains('D')) {
+      continue;
+    }
+    final String file = line.substring(3).trim();
+    final int renamed = file.indexOf(' -> ');
+    files.add(renamed == -1 ? file : file.substring(renamed + 4));
+  }
+  return files;
+}
+
+List<String> _gitLines(List<String> arguments, String workingDirectory) {
+  final ProcessResult result = Process.runSync('git', arguments, workingDirectory: workingDirectory);
+  if (result.exitCode != 0) {
+    throw StateError('git ${arguments.join(' ')} failed: ${result.stderr}');
+  }
+  return const LineSplitter().convert(result.stdout as String).where((String line) => line.trim().isNotEmpty).toList();
+}
+
+/// [files], relative to [module], filtered to those [changed] reports, which are relative to the
+/// repository root.
+List<String> onlyChanged(String module, List<String> files, Set<String> changed) {
+  final String normalized = path.normalize(module);
+  final String prefix = normalized == '.' ? '' : '$normalized/';
+  return files.where((String file) => changed.contains('$prefix$file')).toList();
+}
+
 List<String> formattableFiles(String module, List<Glob> exclude) {
   return Directory(module)
       .listSync(recursive: true, followLinks: false)
@@ -451,8 +494,7 @@ bool _detectFvmOnPath() {
   if (pathVar == null) {
     return false;
   }
-  final List<String> names =
-      Platform.isWindows ? <String>['fvm.bat', 'fvm.cmd', 'fvm.exe', 'fvm'] : <String>['fvm'];
+  final List<String> names = Platform.isWindows ? <String>['fvm.bat', 'fvm.cmd', 'fvm.exe', 'fvm'] : <String>['fvm'];
   for (final String entry in pathVar.split(Platform.isWindows ? ';' : ':')) {
     if (entry.isEmpty) {
       continue;
@@ -474,8 +516,7 @@ bool _detectFvmOnPath() {
 bool isFvmConfigured(String dir) {
   String current = path.absolute(dir);
   while (true) {
-    if (File(path.join(current, '.fvmrc')).existsSync() ||
-        Directory(path.join(current, '.fvm')).existsSync()) {
+    if (File(path.join(current, '.fvmrc')).existsSync() || Directory(path.join(current, '.fvm')).existsSync()) {
       return true;
     }
     final String parent = path.dirname(current);
@@ -500,13 +541,12 @@ Future<void> runCommand(
   bool Function(String)? removeLine,
 }) async {
   assert(
-      (outputMode == OutputMode.capture) == (output != null),
-      'The output parameter must be non-null with and only with '
-      'OutputMode.capture');
+    (outputMode == OutputMode.capture) == (output != null),
+    'The output parameter must be non-null with and only with '
+    'OutputMode.capture',
+  );
 
-  if ((executable == 'flutter' || executable == 'dart') &&
-      fvmOnPath() &&
-      isFvmConfigured(workingDirectory)) {
+  if ((executable == 'flutter' || executable == 'dart') && fvmOnPath() && isFvmConfigured(workingDirectory)) {
     arguments = <String>[executable, ...arguments];
     executable = 'fvm';
   }
@@ -553,7 +593,8 @@ Future<void> runCommand(
 
   final int exitCode = await process.exitCode;
   print(
-      '$clock ELAPSED TIME: ${prettyPrintDuration(time.elapsed)} for $green$commandDescription$reset in $cyan$relativeWorkingDir$reset');
+    '$clock ELAPSED TIME: ${prettyPrintDuration(time.elapsed)} for $green$commandDescription$reset in $cyan$relativeWorkingDir$reset',
+  );
 
   if (output != null) {
     output
@@ -577,11 +618,13 @@ Future<void> runCommand(
         stderr.writeln(_flattenToString(await savedStderr));
         break;
     }
-    print('$redLine\n'
-        '${bold}ERROR: ${red}Last command exited with $exitCode (expected: ${expectNonZeroExit ? (expectedExitCode ?? 'non-zero') : 'zero'}).$reset\n'
-        '${bold}Command: $green$commandDescription$reset\n'
-        '${bold}Relative working directory: $cyan$relativeWorkingDir$reset\n'
-        '$redLine');
+    print(
+      '$redLine\n'
+      '${bold}ERROR: ${red}Last command exited with $exitCode (expected: ${expectNonZeroExit ? (expectedExitCode ?? 'non-zero') : 'zero'}).$reset\n'
+      '${bold}Command: $green$commandDescription$reset\n'
+      '${bold}Relative working directory: $cyan$relativeWorkingDir$reset\n'
+      '$redLine',
+    );
     exit(1);
   }
 }
