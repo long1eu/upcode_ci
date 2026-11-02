@@ -1,3 +1,19 @@
+## 0.10.36
+
+`flutter:format` and `dart:format` take `--changed`, for the files git reports as
+uncommitted, and `--since <ref>`, for those changed against a ref as well as
+anything uncommitted. Without either they format every file in the module as
+before.
+
+Formatting everything rewrites code nobody touched whenever the formatter's
+output shifts, which buries a real change in a diff of unrelated files. On a
+large module it is also most of the work, though not the slow part: the whole of
+cb-mobile formats in about eight seconds.
+
+An empty result is a real answer — nothing changed, so nothing is formatted.
+`dart format` formats the whole directory when it is given no paths, so a caller
+must never fall back to every file when the list comes back empty.
+
 ## 0.10.35
 
 Add a `windows` section for apps that ship more than one environment on
