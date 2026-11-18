@@ -1,3 +1,13 @@
+## 0.10.37
+
+`--config <file>` (or the `UPCODE_CONFIG` environment variable) names the
+settings file to read instead of `./upcode.yaml`. Paths in the file stay
+relative to the directory the command is run from.
+
+A project that keeps cloud project ids out of its repository can now keep the
+settings file in its encrypted private folder:
+`upcode --config private/upcode.yaml flutter:version increment`.
+
 ## 0.10.36
 
 `flutter:format` and `dart:format` take `--changed`, for the files git reports as
